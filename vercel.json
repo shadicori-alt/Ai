@@ -2,22 +2,26 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.html",
-      "use": "@vercel/static",
-      "config": {
-        "distDir": "."
-      }
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.css", 
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.json",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=3600",
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY"
-      }
+      "dest": "/index.html"
     }
   ]
 }
