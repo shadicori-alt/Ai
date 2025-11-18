@@ -271,12 +271,18 @@ async function initializeApp() {
     if (loaded) {
         console.log('Application initialized successfully');
         
+        // Initialize chat after data load
+        setTimeout(initializeChat, 500);
+        
         // Trigger custom event for page-specific initialization
         document.dispatchEvent(new CustomEvent('appReady'));
     } else {
         console.error('Failed to initialize application');
         // Show error message to user
         showNotification('فشل في تحميل البيانات. يرجى تحديث الصفحة.', 'error');
+        
+        // Initialize chat even if data loading failed
+        setTimeout(initializeChat, 500);
     }
 }
 
@@ -305,55 +311,132 @@ function navigateToPage(page) {
     window.location.href = page;
 }
 
-// ==================== نظام الشات الذكي المحسن مع الديب سيك ====================
+// ==================== نظام الشات الذكي الجديد ====================
 
 let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
 
-// نظام الردود الذكية المحسن مع التعامل مع جميع أنواع الأسئلة
-async function askDeepSeek(question) {
+// نظام الشات الأساسي
+function initializeChat() {
+    console.log('🚀 Starting chat initialization...');
+    
+    // تحقق إذا كان الشات موجوداً بالفعل
+    if (document.getElementById('chatWidget')) {
+        console.log('ℹ️ Chat already exists');
+        return;
+    }
+    
+    try {
+        // إنشاء واجهة الشات
+        const chatWidget = document.createElement('div');
+        chatWidget.id = 'chatWidget';
+        chatWidget.innerHTML = `
+            <div class="chat-container enhanced-chat" style="display: none;">
+                <div class="chat-header card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-robot"></i>
+                        <span class="fw-bold">مساعد الذكاء الاصطناعي</span>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-sm btn-outline-light" onclick="clearChatHistory()" title="مسح المحادثة">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-light chat-close" onclick="toggleChatWindow()" title="إغلاق">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-messages card-body" id="chatMessages">
+                    <div class="welcome-message text-center text-muted">
+                        <i class="bi bi-robot fs-1 mb-2 d-block"></i>
+                        <h5>مرحبًا! 👋</h5>
+                        <p>أنا مساعدك الذكي. اسألني عن الفواتير، المناديب، المخزون، أو أي استفسار آخر!</p>
+                    </div>
+                </div>
+                <div class="chat-input-container card-footer">
+                    <div class="input-group">
+                        <input type="text" id="chatInput" class="form-control" placeholder="اكتب سؤالك هنا...">
+                        <button class="btn btn-primary" onclick="sendChatMessage()" id="sendButton">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button class="chat-toggle enhanced-toggle btn btn-primary rounded-circle d-flex align-items-center justify-content-center" onclick="toggleChatWindow()">
+                <i class="bi bi-robot"></i>
+            </button>
+        `;
+        
+        document.body.appendChild(chatWidget);
+        
+        // إضافة مستمع الأحداث للإدخال
+        const chatInput = document.getElementById('chatInput');
+        if (chatInput) {
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+        }
+        
+        // تحميل تاريخ المحادثة
+        loadChatHistory();
+        
+        console.log('✅ Chat system initialized successfully!');
+        
+    } catch (error) {
+        console.error('❌ Error initializing chat:', error);
+    }
+}
+
+// إرسال رسالة في الشات
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    try {
+        // إضافة رسالة المستخدم
+        addChatMessage(message, 'user');
+        input.value = '';
+        
+        // تعطيل الزر أثناء المعالجة
+        const sendButton = document.getElementById('sendButton');
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+        
+        // إظهار مؤشر الكتابة
+        const typingIndicator = addChatMessage('جاري البحث عن الإجابة...', 'typing');
+        
+        // محاكاة الانتظار
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // الحصول على الرد
+        const response = await getAIResponse(message);
+        
+        // إزالة مؤشر الكتابة وإضافة الرد
+        typingIndicator.remove();
+        addChatMessage(response, 'bot');
+        
+        // حفظ في السجل
+        saveToChatHistory(message, response);
+        
+    } catch (error) {
+        console.error('Error in sendChatMessage:', error);
+        addChatMessage('عذرًا، حدث خطأ. يرجى المحاولة مرة أخرى.', 'bot');
+    } finally {
+        // إعادة تمكين الزر
+        const sendButton = document.getElementById('sendButton');
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+    }
+}
+
+// الحصول على رد الذكاء الاصطناعي
+async function getAIResponse(question) {
     try {
         const apiKey = 'sk-cf9dffdbf59a461d891b1236d8dfabef';
         
-        // نظام تصنيف الأسئلة المتقدم
-        const questionType = classifyQuestion(question);
-        
-        // رسالة النظام المخصصة حسب نوع السؤال
-        let systemMessage = '';
-        
-        if (questionType === 'work') {
-            systemMessage = `أنت مساعد متخصص في نظام إدارة الفواتير والتوصيل. 
-لديك الوصول إلى البيانات التالية:
-• إجمالي الفواتير: ${invoices.length} فاتورة
-• الفواتير قيد التوصيل: ${invoices.filter(inv => inv.status === 'قيد التوصيل').length}
-• الفواتير المسلمة: ${invoices.filter(inv => inv.status === 'مسلمة').length}
-• الفواتير المرتجعة: ${invoices.filter(inv => inv.status === 'مرتجعة').length}
-• عدد المناديب: ${drivers.length}
-• إجمالي أصناف المخزون: ${stock.length}
-• الأصناف المنخفضة في المخزون: ${stock.filter(item => item.quantity < item.minQuantity).length}
-
-يمكنك المساعدة في:
-- استعلامات الفواتير والحالة
-- إدارة المناديب والمهام
-- مراقبة المخزون والتنبيهات
-- التقارير والإحصائيات
-- حل مشاكل النظام
-
-أجب بلغة العربية الفصحى بطريقة مهنية ومفيدة.`;
-        } else if (questionType === 'general') {
-            systemMessage = `أنت مساعد ذكي متعدد المجالات. يمكنك الإجابة على أسئلة متنوعة في:
-- المعلومات العامة والمعرفة
-- النصائح والإرشادات
-- حل المشكلات
-- الترفيه والمحادثات العامة
-- التعليم والشرح
-- الأخبار والتحديثات (بناء على معرفتك حتى يوليو 2024)
-
-أجب بلغة العربية بطريقة مفيدة وواضحة ومحترمة. كن دقيقًا في المعلومات وواضحًا في الشرح.`;
-        } else {
-            systemMessage = `أنت مساعد ذكي ومفيد. أجب على الأسئلة بلغة العربية بطريقة متوازنة بين المهنية والودودة.
-كن دقيقًا في المعلومات ومفيدًا في الردود.`;
-        }
-
         const response = await fetch('https://api.deepseek.com/chat/completions', {
             method: 'POST',
             headers: {
@@ -365,642 +448,176 @@ async function askDeepSeek(question) {
                 messages: [
                     {
                         role: 'system',
-                        content: systemMessage
+                        content: `أنت مساعد في نظام إدارة الفواتير والتوصيل. 
+                        البيانات المتاحة:
+                        - الفواتير: ${invoices.length} فاتورة
+                        - المناديب: ${drivers.length} مندوب  
+                        - المخزون: ${stock.length} صنف
+                        أجب بلغة العربية فقط وساعد في أي سؤال.`
                     },
-                    ...chatHistory.slice(-10), // آخر 10 رسائل من التاريخ
+                    ...chatHistory.slice(-6),
                     {
                         role: 'user',
                         content: question
                     }
                 ],
-                max_tokens: 1500,
-                temperature: 0.7,
-                stream: false
+                max_tokens: 1000,
+                temperature: 0.7
             })
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API Response Error:', errorText);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        
-        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-            throw new Error('Invalid API response format');
-        }
-        
         return data.choices[0].message.content;
         
     } catch (error) {
-        console.error('DeepSeek API Error Details:', error);
-        return getEnhancedFallbackResponse(question);
+        console.error('AI API Error:', error);
+        // رد بديل
+        return `🤖 مساعد نظام إدارة الفواتير
+
+📊 الإحصائيات الحالية:
+• الفواتير: ${invoices.length} فاتورة
+• المناديب: ${drivers.length} مندوب
+• المخزون: ${stock.length} صنف
+
+للأسف خدمة الذكاء الاصطناعي غير متاحة حالياً. هذه أحدث البيانات المحلية.`;
     }
 }
 
-// نظام تصنيف الأسئلة المتقدم
-function classifyQuestion(question) {
-    const lowerQuestion = question.toLowerCase();
+// إضافة رسالة للشات
+function addChatMessage(content, type) {
+    const messagesContainer = document.getElementById('chatMessages');
     
-    // كلمات مفتاحية متعلقة بالعمل
-    const workKeywords = [
-        'فاتورة', 'فواتير', 'مندوب', 'سائق', 'مخزون', 'صنف', 'توصيل', 
-        'تسليم', 'مرتجع', 'زبون', 'عميل', 'سعر', 'تكلفة', 'دفع', 'شحن',
-        'طلبات', 'طلب', 'نظام', 'إدارة', 'تقرير', 'إحصائيات', 'بيانات',
-        'شركة', 'عمل', 'مبيعات', 'عملاء', 'توصيلات', 'شحنة', 'بضاعة',
-        'منتج', 'منتجات', 'مستودع', 'مخزن', 'جرد', 'جودة', 'خدمة',
-        'عمولة', 'راتب', 'موظف', 'موظفين', 'إنتاج', 'مصنع', 'مورد',
-        'موردين', 'شراء', 'بيع', 'ربح', 'خسارة', 'ميزانية', 'تكاليف',
-        'تسعير', 'عرض', 'عروض', 'خصم', 'خصومات', 'ضريبة', 'ضرائب',
-        'فاتورة ضريبية', 'رقم ضريبي', 'سجل تجاري', 'commercial registry',
-        'tax number', 'invoice', 'delivery', 'driver', 'stock', 'inventory'
-    ];
-    
-    // كلمات مفتاحية للأسئلة العامة
-    const generalKeywords = [
-        'مرحبا', 'اهلا', 'سلام', 'السلام', 'كيف حالك', 'شكرا', 'مشكور',
-        'لو سمحت', 'من فضلك', 'مساء الخير', 'صباح الخير', 'مساء النور',
-        'hello', 'hi', 'thanks', 'thank you', 'please', 'good morning',
-        'good evening', 'كيف', 'متى', 'أين', 'لماذا', 'ماذا', 'هل',
-        'ما هو', 'ما هي', 'ما معنى', 'شرح', 'مساعدة', 'مساعدة',
-        'help', 'explain', 'what is', 'how to', 'when', 'where', 'why'
-    ];
-    
-    // كلمات مفتاحية للأسئلة التقنية
-    const techKeywords = [
-        'برمجة', 'تطبيق', 'موقع', 'ويب', 'web', 'app', 'application',
-        'website', 'برمج', 'مطور', 'developer', 'كود', 'code', 'سكريبت',
-        'script', 'html', 'css', 'javascript', 'js', 'php', 'python',
-        'java', 'قاعدة بيانات', 'database', 'سيرفر', 'server', 'hosting',
-        'استضافة', 'دومين', 'domain', 'تصميم', 'design', 'واجهة', 'interface',
-        'api', 'rest', 'json', 'xml', 'git', 'github', 'deploy', 'نشر'
-    ];
-    
-    // تحديد نوع السؤال
-    if (workKeywords.some(keyword => lowerQuestion.includes(keyword))) {
-        return 'work';
-    } else if (techKeywords.some(keyword => lowerQuestion.includes(keyword))) {
-        return 'tech';
-    } else if (generalKeywords.some(keyword => lowerQuestion.includes(keyword))) {
-        return 'general';
-    } else {
-        // إذا لم يتطابق مع أي فئة، نعتبره سؤالاً عاماً
-        return 'general';
+    if (!messagesContainer) {
+        console.error('Chat messages container not found');
+        return null;
     }
-}
-
-// نظام الردود البديلة المحسن
-function getEnhancedFallbackResponse(question) {
-    const lowerQuestion = question.toLowerCase();
-    const questionType = classifyQuestion(question);
-    const stats = getStatistics();
     
-    if (questionType === 'work') {
-        return `🤖 **مساعد نظام إدارة الفواتير**
-
-📊 **الإحصائيات الحالية:**
-• إجمالي الفواتير: ${stats.totalInvoices}
-• قيد التوصيل: ${stats.pendingInvoices}
-• مسلمة: ${stats.deliveredInvoices}
-• مرتجعة: ${stats.returnedInvoices}
-• عدد المناديب: ${stats.totalDrivers}
-• أصناف المخزون: ${stats.totalStockItems}
-
-🚨 **الفواتير المتأخرة:** ${getDelayedInvoices().length}
-
-📦 **المخزون المنخفض:** ${getLowStockItems().length}
-
-للأسف خدمة الذكاء الاصطناعي غير متاحة حاليًا. هذه أحدث البيانات المحلية من النظام.
-
-يمكنني مساعدتك في:
-• تتبع الفواتير
-• حالة المناديب
-• مستويات المخزون
-• التقارير الأساسية`;
-
-    } else if (questionType === 'tech') {
-        return `🛠️ **المساعد التقني**
-
-للأسف خدمة الذكاء الاصطناعي غير متاحة حاليًا للاستفسارات التقنية.
-
-يمكنني عادةً المساعدة في:
-• مشاكل البرمجة
-• استشارات التطوير
-• حلول تقنية
-• نصائح برمجية
-
-يرجى المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم الفني.`;
-
-    } else {
-        return `👋 **مرحبًا! أنا مساعدك الذكي**
-
-للأسف خدمة الذكاء الاصطناعي غير متاحة حاليًا.
-
-عادةً يمكنني مساعدتك في:
-• الأسئلة العامة والمعلومات
-• النصائح والإرشادات
-• الشرح والتوضيح
-• المحادثات اليومية
-
-📞 للأسئلة العاجلة، يرجى التواصل مع:
-• الدعم الفني للاستفسارات التقنية
-• إدارة النظام لاستفسارات العمل
-• المسؤول المباشر للاستفسارات الإدارية
-
-🔧 جاري العمل على إصلاح الخدمة، شكرًا لتفهمك!`;
+    // إزالة رسالة الترحيب إذا كانت موجودة
+    const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+    if (welcomeMessage && type === 'user') {
+        welcomeMessage.remove();
     }
-}
-
-// إعداد نظام الشات المحسن بالكامل
-function setupEnhancedChat() {
-    // التحقق مما إذا كانت واجهة الشات موجودة بالفعل
-    if (!document.getElementById('chatWidget')) {
-        const chatWidget = document.createElement('div');
-        chatWidget.id = 'chatWidget';
-        chatWidget.innerHTML = `
-            <!-- حاوية الشات الرئيسية -->
-            <div class="chat-container enhanced-chat" style="display: none;">
-                <!-- رأس الشات -->
-                <div class="chat-header card-header d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-robot fs-5"></i>
-                        <span class="fw-bold">مساعد الذكاء الاصطناعي</span>
-                        <span class="badge bg-success ms-2">متصل</span>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <button class="btn btn-sm btn-outline-light" onclick="minimizeChat()" title="تصغير">
-                            <i class="bi bi-dash-lg"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-light" onclick="clearChat()" title="مسح المحادثة">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-light chat-close" onclick="toggleChat()" title="إغلاق">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </div>
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    
+    if (type === 'typing') {
+        messageDiv.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
-                
-                <!-- منطقة الرسائل -->
-                <div class="chat-messages card-body" id="chatMessages">
-                    <div class="welcome-message text-center text-muted p-4">
-                        <div class="robot-icon mb-3">
-                            <i class="bi bi-robot fs-1 text-primary"></i>
-                        </div>
-                        <h5 class="fw-bold mb-2">مرحبًا بك! 👋</h5>
-                        <p class="mb-3">أنا مساعدك الذكي في نظام إدارة الفواتير والتوصيل</p>
-                        <div class="capabilities-list text-start">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-receipt text-success"></i>
-                                <span>استعلامات الفواتير والتتبع</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-truck text-warning"></i>
-                                <span>إدارة المناديب والمهام</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-box-seam text-info"></i>
-                                <span>مراقبة المخزون والتنبيهات</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-graph-up text-primary"></i>
-                                <span>التقارير والإحصائيات</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-chat-dots text-secondary"></i>
-                                <span>أسئلة عامة واستفسارات</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- منطقة الإدخال والإجراءات السريعة -->
-                <div class="chat-input-container card-footer">
-                    <!-- شريط الإدخال -->
-                    <div class="input-group mb-2">
-                        <input type="text" id="chatInput" class="form-control" 
-                               placeholder="اكتب سؤالك هنا حول الفواتير، المناديب، المخزون، أو أي استفسار آخر..." 
-                               onkeypress="handleChatInputKeypress(event)"
-                               aria-label="رسالة الشات">
-                        <button class="btn btn-primary d-flex align-items-center gap-2" 
-                                onclick="sendMessage()" 
-                                id="sendButton"
-                                disabled>
-                            <i class="bi bi-send-fill"></i>
-                            <span>إرسال</span>
-                        </button>
-                    </div>
-                    
-                    <!-- الإجراءات السريعة -->
-                    <div class="quick-actions">
-                        <div class="section-title mb-2">
-                            <small class="text-muted fw-bold">استفسارات سريعة:</small>
-                        </div>
-                        <div class="actions-row d-flex gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" 
-                                    onclick="quickAction('عرض إحصائيات الفواتير')">
-                                <i class="bi bi-receipt"></i>
-                                <span>الفواتير</span>
-                            </button>
-                            <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-1" 
-                                    onclick="quickAction('ما هي حالة المناديب؟')">
-                                <i class="bi bi-truck"></i>
-                                <span>المناديب</span>
-                            </button>
-                            <button class="btn btn-sm btn-outline-info d-flex align-items-center gap-1" 
-                                    onclick="quickAction('عرض المخزون المنخفض')">
-                                <i class="bi bi-box-seam"></i>
-                                <span>المخزون</span>
-                            </button>
-                            <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1" 
-                                    onclick="quickAction('عرض التقارير اليومية')">
-                                <i class="bi bi-graph-up"></i>
-                                <span>التقارير</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <span class="text-muted">${content}</span>
             </div>
-            
-            <!-- زر تبديل الشات -->
-            <button class="chat-toggle enhanced-toggle btn btn-primary rounded-circle d-flex align-items-center justify-content-center" 
-                    onclick="toggleChat()"
-                    id="chatToggleButton">
-                <i class="bi bi-robot fs-5"></i>
-                <span class="notification-badge" id="chatNotification" style="display: none;"></span>
-            </button>
         `;
-        document.body.appendChild(chatWidget);
-        
-        // تحميل تاريخ المحادثة بعد إنشاء الواجهة
-        setTimeout(loadChatHistory, 100);
-        
-        // إضافة مستمعين للأحداث
-        setupChatEventListeners();
-        
-        console.log('✅ نظام الشات المحسن تم تحميله بنجاح');
     } else {
-        console.log('ℹ️ نظام الشات موجود بالفعل');
+        messageDiv.textContent = content;
     }
-}
-
-// إعداد مستمعي الأحداث للشات
-function setupChatEventListeners() {
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        // تحديث حالة زر الإرسال
-        chatInput.addEventListener('input', function() {
-            const sendButton = document.getElementById('sendButton');
-            sendButton.disabled = this.value.trim().length === 0;
-        });
-        
-        // التركيز التلقائي عند فتح الشات
-        chatInput.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
-        });
-        
-        chatInput.addEventListener('blur', function() {
-            this.parentElement.classList.remove('focused');
-        });
-    }
-}
-
-// إرسال رسالة محسنة مع معالجة الأخطاء
-async function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const message = input.value.trim();
-    const sendButton = document.getElementById('sendButton');
     
-    if (!message) {
-        showNotification('يرجى كتابة رسالة أولاً', 'warning');
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    return messageDiv;
+}
+
+// تحميل تاريخ المحادثة
+function loadChatHistory() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer || chatHistory.length === 0) return;
+    
+    // إزالة رسالة الترحيب
+    const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+    if (welcomeMessage) {
+        welcomeMessage.remove();
+    }
+    
+    // إضافة الرسائل من السجل
+    chatHistory.forEach(msg => {
+        if (msg.role === 'user') {
+            addChatMessage(msg.content, 'user');
+        } else if (msg.role === 'assistant') {
+            addChatMessage(msg.content, 'bot');
+        }
+    });
+}
+
+// حفظ في تاريخ المحادثة
+function saveToChatHistory(userMessage, botResponse) {
+    chatHistory.push(
+        { role: 'user', content: userMessage },
+        { role: 'assistant', content: botResponse }
+    );
+    
+    // الحفاظ على آخر 10 رسائل فقط
+    if (chatHistory.length > 10) {
+        chatHistory = chatHistory.slice(-10);
+    }
+    
+    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+}
+
+// تبديل فتح/إغلاق الشات
+function toggleChatWindow() {
+    const chatContainer = document.querySelector('.chat-container.enhanced-chat');
+    if (!chatContainer) {
+        console.error('Chat container not found');
         return;
     }
     
-    try {
-        // تعطيل الزر وإظهار حالة التحميل
-        sendButton.disabled = true;
-        sendButton.innerHTML = '<i class="bi bi-hourglass-split"></i><span>جاري الإرسال...</span>';
-        input.disabled = true;
-        
-        // إضافة رسالة المستخدم إلى الواجهة
-        addMessage(message, 'user');
-        input.value = '';
-        
-        // إظهار مؤشر الكتابة
-        const typingIndicator = addMessage('جاري البحث عن الإجابة المناسبة...', 'bot typing');
-        
-        // الانتظار قليلاً لمحاكاة الكتابة (تحسين تجربة المستخدم)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // الحصول على الرد من الذكاء الاصطناعي
-        const response = await askDeepSeek(message);
-        
-        // إزالة مؤشر الكتابة
-        typingIndicator.remove();
-        
-        // إضافة الرد الحقيقي
-        addMessage(response, 'bot');
-        
-        // حفظ المحادثة في التاريخ
-        chatHistory.push(
-            { role: 'user', content: message, timestamp: new Date().toISOString() },
-            { role: 'assistant', content: response, timestamp: new Date().toISOString() }
-        );
-        
-        // الحفاظ على آخر 20 رسالة فقط
-        if (chatHistory.length > 20) {
-            chatHistory = chatHistory.slice(-20);
-        }
-        
-        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-        
-        // إظهار إشعار بنجاح الإرسال
-        showNotification('تم إرسال الرسالة بنجاح', 'success');
-        
-    } catch (error) {
-        console.error('Error in sendMessage:', error);
-        
-        // إزالة مؤشر الكتابة وإظهار رسالة الخطأ
-        const typingIndicator = document.querySelector('.typing-message');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
-        
-        addMessage('عذرًا، حدث خطأ في الاتصال. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.', 'bot error');
-        
-        showNotification('فشل في إرسال الرسالة', 'danger');
-        
-    } finally {
-        // إعادة تعيين حالة واجهة المستخدم
-        sendButton.disabled = false;
-        sendButton.innerHTML = '<i class="bi bi-send-fill"></i><span>إرسال</span>';
-        input.disabled = false;
-        input.focus();
-    }
-}
-
-// الإجراءات السريعة المحسنة
-function quickAction(action) {
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        chatInput.value = action;
-        chatInput.focus();
-        
-        // تحديث حالة زر الإرسال
-        const event = new Event('input', { bubbles: true });
-        chatInput.dispatchEvent(event);
-        
-        // إرسال تلقائي بعد ثانية
-        setTimeout(() => {
-            sendMessage();
-        }, 1000);
-    }
-}
-
-// التعامل مع ضغط المفتاح في حقل الإدخال
-function handleChatInputKeypress(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        sendMessage();
-    }
-}
-
-// مسح المحادثة مع التأكيد
-function clearChat() {
-    const confirmationMessage = `هل أنت متأكد من مسح تاريخ المحادثة؟
+    const isHidden = chatContainer.style.display === 'none';
+    chatContainer.style.display = isHidden ? 'flex' : 'none';
     
-سيتم حذف جميع الرسائل السابقة ولا يمكن استعادتها.`;
+    // التركيز على حقل الإدخال عند الفتح
+    if (isHidden) {
+        setTimeout(() => {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) chatInput.focus();
+        }, 300);
+    }
+}
 
-    if (confirm(confirmationMessage)) {
+// مسح تاريخ المحادثة
+function clearChatHistory() {
+    if (confirm('هل تريد مسح تاريخ المحادثة؟')) {
         chatHistory = [];
         localStorage.removeItem('chatHistory');
         
         const messagesContainer = document.getElementById('chatMessages');
         if (messagesContainer) {
             messagesContainer.innerHTML = `
-                <div class="welcome-message text-center text-muted p-4">
-                    <div class="robot-icon mb-3">
-                        <i class="bi bi-robot fs-1 text-primary"></i>
-                    </div>
-                    <h5 class="fw-bold mb-2">مرحبًا بك! 👋</h5>
-                    <p class="mb-3">أنا مساعدك الذكي في نظام إدارة الفواتير والتوصيل</p>
-                    <div class="capabilities-list text-start">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-receipt text-success"></i>
-                            <span>استعلامات الفواتير والتتبع</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-truck text-warning"></i>
-                            <span>إدارة المناديب والمهام</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-box-seam text-info"></i>
-                            <span>مراقبة المخزون والتنبيهات</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-graph-up text-primary"></i>
-                            <span>التقارير والإحصائيات</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-chat-dots text-secondary"></i>
-                            <span>أسئلة عامة واستفسارات</span>
-                        </div>
-                    </div>
+                <div class="welcome-message text-center text-muted">
+                    <i class="bi bi-robot fs-1 mb-2 d-block"></i>
+                    <h5>مرحبًا! 👋</h5>
+                    <p>أنا مساعدك الذكي. اسألني عن الفواتير، المناديب، المخزون، أو أي استفسار آخر!</p>
                 </div>
             `;
         }
         
-        showNotification('تم مسح تاريخ المحادثة بنجاح', 'success');
-        console.log('🗑️ تم مسح تاريخ المحادثة');
+        showNotification('تم مسح تاريخ المحادثة', 'success');
     }
 }
 
-// تصغير الشات
-function minimizeChat() {
-    const chatContainer = document.querySelector('.chat-container.enhanced-chat');
-    if (chatContainer) {
-        chatContainer.style.display = 'none';
-        showNotification('تم تصغير نافذة المحادثة', 'info');
-    }
-}
+// جعل الدوال متاحة globally
+window.toggleChatWindow = toggleChatWindow;
+window.sendChatMessage = sendChatMessage;
+window.clearChatHistory = clearChatHistory;
 
-// تحميل تاريخ المحادثة
-function loadChatHistory() {
-    const messagesContainer = document.getElementById('chatMessages');
-    
-    if (!messagesContainer) {
-        console.error('❌ لم يتم العثور على حاوية الرسائل');
-        return;
-    }
-    
-    // إزالة رسالة الترحيب إذا كان هناك تاريخ محادثات
-    if (chatHistory.length > 0) {
-        const welcomeMessage = messagesContainer.querySelector('.welcome-message');
-        if (welcomeMessage) {
-            welcomeMessage.remove();
-        }
-        
-        // إضافة جميع الرسائل من التاريخ
-        chatHistory.forEach(msg => {
-            if (msg.role === 'user') {
-                addMessage(msg.content, 'user');
-            } else if (msg.role === 'assistant') {
-                addMessage(msg.content, 'bot');
-            }
-        });
-        
-        console.log(`📖 تم تحميل ${chatHistory.length} رسالة من التاريخ`);
-    } else {
-        console.log('ℹ️ لا يوجد تاريخ محادثات للتحميل');
-    }
-}
-
-// إضافة رسالة للشات مع تحسينات الواجهة
-function addMessage(content, sender) {
-    const messagesContainer = document.getElementById('chatMessages');
-    
-    if (!messagesContainer) {
-        console.error('❌ لم يتم العثور على حاوية الرسائل في addMessage');
-        return null;
-    }
-    
-    // إزالة رسالة الترحيب إذا كانت موجودة
-    const welcomeMessage = messagesContainer.querySelector('.welcome-message');
-    if (welcomeMessage && sender === 'user') {
-        welcomeMessage.remove();
-    }
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}-message`;
-    
-    // إضافة الطابع الزمني
-    const timestamp = new Date().toLocaleTimeString('ar-EG', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-    
-    if (sender === 'typing') {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="typing-indicator">
-                        <div class="typing-dots">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                    <span class="typing-text">${content}</span>
-                </div>
-                <div class="message-time">${timestamp}</div>
-            </div>
-        `;
-    } else if (sender === 'error') {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <div class="d-flex align-items-start gap-2">
-                    <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
-                    <div class="error-content">
-                        ${content}
-                    </div>
-                </div>
-                <div class="message-time">${timestamp}</div>
-            </div>
-        `;
-    } else {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <div class="message-text">${content}</div>
-                <div class="message-time">${timestamp}</div>
-            </div>
-        `;
-    }
-    
-    messagesContainer.appendChild(messageDiv);
-    
-    // التمرير إلى الأسفل
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    // تأثير الظهور
-    setTimeout(() => {
-        messageDiv.style.opacity = '1';
-        messageDiv.style.transform = 'translateY(0)';
-    }, 10);
-    
-    return messageDiv;
-}
-
-// تبديل فتح/إغلاق الشات
-function toggleChat() {
-    const chatWidget = document.getElementById('chatWidget');
-    if (!chatWidget) {
-        console.error('❌ لم يتم العثور على عنصر الشات');
-        return;
-    }
-    
-    const chatContainer = chatWidget.querySelector('.chat-container.enhanced-chat');
-    const toggleButton = document.getElementById('chatToggleButton');
-    
-    if (!chatContainer || !toggleButton) {
-        console.error('❌ لم يتم العثور على عناصر الشات المطلوبة');
-        return;
-    }
-    
-    const isHidden = chatContainer.style.display === 'none';
-    
-    if (isHidden) {
-        // فتح الشات
-        chatContainer.style.display = 'flex';
-        toggleButton.classList.add('active');
-        
-        // التركيز على حقل الإدخال بعد تأخير بسيط
-        setTimeout(() => {
-            const chatInput = document.getElementById('chatInput');
-            if (chatInput) {
-                chatInput.focus();
-            }
-        }, 300);
-        
-        // إخفاء أي إشعارات
-        const notificationBadge = document.getElementById('chatNotification');
-        if (notificationBadge) {
-            notificationBadge.style.display = 'none';
-        }
-        
-        console.log('💬 فتح نافذة المحادثة');
-    } else {
-        // إغلاق الشات
-        chatContainer.style.display = 'none';
-        toggleButton.classList.remove('active');
-        console.log('🔒 إغلاق نافذة المحادثة');
-    }
-}
-
-// استبدال دالة الإعداد القديمة
-function setupChat() {
-    // الانتظار حتى تحميل DOM بالكامل
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(setupEnhancedChat, 1000);
-        });
-    } else {
-        setTimeout(setupEnhancedChat, 1000);
-    }
-}
-
-// التهيئة عند تحميل الصفحة
+// بدء التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 تهيئة نظام الشات الذكي...');
-    setupChat();
+    console.log('📱 Starting application...');
+    initializeApp();
 });
 
-// جعل الدوال متاحة globally للاستخدام في HTML
-window.toggleChat = toggleChat;
-window.sendMessage = sendMessage;
-window.clearChat = clearChat;
-window.minimizeChat = minimizeChat;
-window.quickAction = quickAction;
-window.handleChatInputKeypress = handleChatInputKeypress;
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp);
+// تهيئة احتياطية للشات بعد 3 ثوان
+setTimeout(() => {
+    if (!document.getElementById('chatWidget')) {
+        console.log('🔄 Fallback chat initialization...');
+        initializeChat();
+    }
+}, 3000);
