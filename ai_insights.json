@@ -1,0 +1,196 @@
+{
+  "criticalAlerts": [
+    {
+      "id": "ALERT001",
+      "type": "ضغط عالي",
+      "message": "المندوب ياسر خالد لديه 15 فاتورة قيد التوصيل - ضغط عالي جداً",
+      "severity": "عالية",
+      "driverCode": "DRIVER003",
+      "driverName": "ياسر خالد",
+      "timestamp": "2025-11-18 14:30:25",
+      "action": "إعادة توزيع الفواتير فوراً",
+      "status": "active"
+    },
+    {
+      "id": "ALERT002",
+      "type": "تأخير في التسليم",
+      "message": "الفاتورة INV012 للعميل محمد علي متأخرة 78 ساعة",
+      "severity": "عالية",
+      "invoiceId": "INV012",
+      "clientName": "محمد علي",
+      "driverCode": "DRIVER001",
+      "timestamp": "2025-11-18 13:15:10",
+      "action": "متابعة فورية مع المندوب",
+      "status": "active"
+    },
+    {
+      "id": "ALERT003",
+      "type": "تأخير في التسليم",
+      "message": "الفاتورة INV015 للعميل فاطمة حسن متأخرة 95 ساعة",
+      "severity": "عالية",
+      "invoiceId": "INV015",
+      "clientName": "فاطمة حسن",
+      "driverCode": "DRIVER002",
+      "timestamp": "2025-11-18 12:45:30",
+      "action": "اتخاذ إجراء فوري",
+      "status": "active"
+    }
+  ],
+  "suggestions": [
+    {
+      "id": "SUG001",
+      "type": "تحسين توزيع الحمل",
+      "message": "يمكن نقل 3 فواتير من ياسر خالد إلى خالد إسماعيل لتخفيف الضغط",
+      "priority": "عالية",
+      "actions": ["عرض خطة التوزيع", "تنفيذ التوزيع"],
+      "estimatedImpact": "تقليل زمن التوصيل بنسبة 25%"
+    }
+  ],
+  "performanceSummary": {
+    "todayDeliveries": 8,
+    "pendingDeliveries": 5,
+    "returnedInvoices": 2,
+    "avgDeliveryTime": 45.2,
+    "topPerformingDriver": "محمد عبد الله",
+    "mostActiveArea": "القاهرة",
+    "totalRevenue": 12500.25,
+    "systemEfficiency": 78.5
+  },
+  "workDistribution": [
+    {
+      "driverCode": "DRIVER001",
+      "driverName": "محمد عبد الله",
+      "suggestedTransfers": [
+        {
+          "fromDriver": "ياسر خالد",
+          "fromDriverCode": "DRIVER003",
+          "invoiceCount": 2,
+          "reason": "توزيع الحمل ونفس المنطقة الجغرافية",
+          "priority": "عالية",
+          "invoiceIds": ["INV013", "INV014"]
+        }
+      ],
+      "capacity": 2,
+      "areas": ["القاهرة", "مدينة نصر", "المعادي"]
+    },
+    {
+      "driverCode": "DRIVER002",
+      "driverName": "أحمد سعيد",
+      "suggestedTransfers": [
+        {
+          "fromDriver": "ياسر خالد",
+          "fromDriverCode": "DRIVER003",
+          "invoiceCount": 1,
+          "reason": "توزيع الحمل",
+          "priority": "متوسطة",
+          "invoiceIds": ["INV016"]
+        }
+      ],
+      "capacity": 1,
+      "areas": ["الجيزة", "الدقي", "الهرم"]
+    }
+  ],
+  "clientAnalysis": {
+    "أحمد محمد": {
+      "totalInvoices": 3,
+      "totalAmount": 4200.75,
+      "statusCounts": {
+        "قيد التوصيل": 1,
+        "مسلمة": 2,
+        "مرتجعة": 0
+      },
+      "phone": "1234567890",
+      "address": "القاهرة - مدينة نصر - شارع عباس العقاد",
+      "lastOrderDate": "2025-11-17",
+      "preferredDriver": "DRIVER001",
+      "avgOrderValue": 1400.25,
+      "deliverySuccessRate": 66.7
+    },
+    "سارة أحمد": {
+      "totalInvoices": 2,
+      "totalAmount": 2100.50,
+      "statusCounts": {
+        "قيد التوصيل": 0,
+        "مسلمة": 2,
+        "مرتجعة": 0
+      },
+      "phone": "1123456789",
+      "address": "الجيزة - الدقي - شارع التحرير",
+      "lastOrderDate": "2025-11-16",
+      "preferredDriver": "DRIVER002",
+      "avgOrderValue": 1050.25,
+      "deliverySuccessRate": 100.0
+    },
+    "فاطمة حسن": {
+      "totalInvoices": 4,
+      "totalAmount": 3200.00,
+      "statusCounts": {
+        "قيد التوصيل": 1,
+        "مسلمة": 2,
+        "مرتجعة": 1
+      },
+      "phone": "1234567891",
+      "address": "القاهرة - المعادي - شارع 9",
+      "lastOrderDate": "2025-11-17",
+      "preferredDriver": "DRIVER003",
+      "avgOrderValue": 800.00,
+      "deliverySuccessRate": 50.0
+    }
+  },
+  "systemHealth": {
+    "totalDelayedInvoices": 3,
+    "highPriorityPending": 2,
+    "overloadedDrivers": 1,
+    "availableCapacity": 6,
+    "lastUpdate": "2025-11-18 14:30:25",
+    "systemEfficiency": 78.5,
+    "recommendedActions": [
+      "إعادة توزيع الفواتير المتأخرة",
+      "تخفيف الحمل عن المندوب المثقل",
+      "متابعة العملاء المتكررين"
+    ]
+  },
+  "recommendations": [
+    {
+      "id": "REC001",
+      "type": "تحسين الأداء",
+      "message": "هناك عدد كبير من الفواتير المتأخرة. يُنصح بإعادة توزيع الحمل وزيادة عدد المناديب",
+      "priority": "عالية",
+      "actions": ["إعادة توزيع الفواتير", "تعديل جدول العمل", "مراجعة مسارات التوصيل"],
+      "impact": "تحسين زمن التوصيل بنسبة 30%"
+    },
+    {
+      "id": "REC002",
+      "type": "إدارة الموارد",
+      "message": "العديد من المناديب لديهم ضغط عمل عالي. يُنصح بتوظيف مندوبين إضافيين",
+      "priority": "متوسطة",
+      "actions": ["التوظيف السريع", "إعادة توزيع مؤقتة", "تحفيز الإضافي"],
+      "impact": "تقليل نسبة التأخير بنسبة 40%"
+    },
+    {
+      "id": "REC003",
+      "type": "تحسين العمليات",
+      "message": "بعض العملاء لديهم نسبة مرتجعات مرتفعة. يُنصح بمراجعة عملية التوصيل لهم",
+      "priority": "متوسطة",
+      "actions": ["مراجعة عناوين العملاء", "تحسين التواصل", "تدريب المناديب"],
+      "impact": "تقليل نسبة المرتجعات بنسبة 50%"
+    }
+  ],
+  "aiInsights": {
+    "predictions": {
+      "nextWeekDeliveries": 45,
+      "expectedDelays": 3,
+      "recommendedDriverCount": 5
+    },
+    "patterns": {
+      "peakHours": ["10:00-12:00", "16:00-18:00"],
+      "busyDays": ["الأحد", "الاثنين", "الخميس"],
+      "problemAreas": ["الهرم", "مدينة نصر"]
+    },
+    "optimization": {
+      "optimalRoute": "توزيع حسب المناطق الجغرافية",
+      "bestTimeSlots": "توصيل في الصباح الباكر",
+      "driverAssignment": "حسب الكفاءة والحمل الحالي"
+    }
+  }
+}

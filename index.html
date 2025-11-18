@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الفواتير الذكي - AI Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
+        .ai-pulse { animation: pulse 2s infinite; }
+        .floating-ai { position: fixed; bottom: 30px; left: 30px; z-index: 1000; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .status-badge { @apply px-3 py-1 rounded-full text-xs font-medium; }
+        .status-pending { @apply bg-yellow-100 text-yellow-800; }
+        .status-delivered { @apply bg-green-100 text-green-800; }
+        .status-returned { @apply bg-red-100 text-red-800; }
+        .priority-high { @apply bg-red-500 text-white; }
+        .priority-medium { @apply bg-orange-500 text-white; }
+        .priority-low { @apply bg-blue-500 text-white; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">📊 نظام الفواتير الذكي</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-tachometer-alt ml-2"></i>لوحة التحكم
+                    </a>
+                    <a href="invoices.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-file-invoice ml-2"></i>الفواتير
+                    </a>
+                    <a href="drivers.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-truck ml-2"></i>المناديب
+                    </a>
+                    <a href="alerts.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-bell ml-2"></i>التنبيهات
+                    </a>
+                    <a href="new-orders.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-plus-circle ml-2"></i>الطلبات الجديدة
+                    </a>
+                    <a href="inventory.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-boxes ml-2"></i>المخزون
+                    </a>
+                    <a href="archive.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-archive ml-2"></i>الأرشيف
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="gradient-bg rounded-2xl p-8 text-white card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-2">مرحباً بكم في نظام إدارة الفواتير الذكي</h2>
+                        <p class="text-blue-100 text-lg">تحليلات ذكية وتوصيات مخصصة مدعومة بالذكاء الاصطناعي</p>
+                    </div>
+                    <div class="text-6xl opacity-80">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-blue-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-file-invoice text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">إجمالي الفواتير</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalInvoices">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-green-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">مسلمة اليوم</p>
+                        <p class="text-2xl font-bold text-gray-900" id="todayDeliveries">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-yellow-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">قيد التوصيل</p>
+                        <p class="text-2xl font-bold text-gray-900" id="pendingDeliveries">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-red-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">تنبيهات مهمة</p>
+                        <p class="text-2xl font-bold text-gray-900" id="criticalAlerts">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Performance Summary -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 shadow-lg card-hover border border-blue-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-blue-600 ml-2"></i>
+                    ملخص الأداء
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">أفضل مندوب:</span>
+                        <span class="font-medium" id="topDriver">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">متوسط وقت التوصيل:</span>
+                        <span class="font-medium" id="avgDeliveryTime">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">أنشط منطقة:</span>
+                        <span class="font-medium" id="mostActiveArea">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">إجمالي الإيرادات:</span>
+                        <span class="font-medium text-green-600" id="totalRevenue">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-6 shadow-lg card-hover border border-green-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-heartbeat text-green-600 ml-2"></i>
+                    صحة النظام
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">كفاءة النظام:</span>
+                        <span class="font-medium" id="systemEfficiency">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">الطاقة المتاحة:</span>
+                        <span class="font-medium" id="availableCapacity">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">فواتير متأخرة:</span>
+                        <span class="font-medium text-red-600" id="delayedInvoices">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">أولوية عالية:</span>
+                        <span class="font-medium text-orange-600" id="highPriority">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Distribution -->
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-users text-purple-600 ml-2"></i>
+                    توزيع العمل
+                </h4>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">مناديب مشغولين:</span>
+                        <span class="font-medium" id="overloadedDrivers">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">أولوية عالية:</span>
+                        <span class="font-medium" id="highPriority">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">إجمالي الإيرادات:</span>
+                        <span class="font-medium text-green-600" id="totalRevenue">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="bg-white rounded-xl p-6 shadow-lg card-hover mb-8" id="recommendationsSection" style="display: none;">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 ml-2"></i>
+                توصيات الذكاء الاصطناعي
+            </h3>
+            <div id="recommendationsList" class="space-y-4">
+                <!-- Recommendations will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Status Distribution Chart -->
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-chart-pie text-indigo-600 ml-2"></i>
+                    توزيع حالات الفواتير
+                </h3>
+                <div id="statusChart" style="height: 300px;"></div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-chart-bar text-indigo-600 ml-2"></i>
+                    الإيرادات حسب الحالة
+                </h3>
+                <div id="revenueChart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Delivery Performance Chart -->
+        <div class="bg-white rounded-xl p-6 shadow-lg card-hover mb-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-clock text-indigo-600 ml-2"></i>
+                أداء التوصيل
+            </h3>
+            <div id="deliveryChart" style="height: 300px;"></div>
+        </div>
+
+        <!-- Recent Invoices Table -->
+        <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-list text-indigo-600 ml-2"></i>
+                    أحدث الفواتير
+                </h3>
+                <a href="invoices.html" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                    عرض الكل <i class="fas fa-arrow-left ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">رقم الفاتورة</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">اسم العميل</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">المبلغ</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">الحالة</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">الأولوية</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">المندوب</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentInvoicesTable">
+                        <!-- Recent invoices will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI Assistant -->
+    <div class="floating-ai">
+        <button id="aiAssistantBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 ai-pulse">
+            <i class="fas fa-robot text-2xl"></i>
+        </button>
+        <div id="aiNotificationBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center hidden">0</div>
+    </div>
+
+    <!-- AI Assistant Modal -->
+    <div id="aiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-robot text-purple-600 ml-2"></i>
+                    المساعد الذكي
+                </h3>
+                <button id="closeAiModal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">ما الذي يمكنني مساعدتك به؟</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                        <button class="ai-question bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-right hover:bg-blue-200 transition-colors" data-question="أظهر لي أكثر المندوبين تأخيراً">
+                            <i class="fas fa-clock ml-2"></i>أكثر المندوبين تأخيراً
+                        </button>
+                        <button class="ai-question bg-green-100 text-green-800 px-3 py-2 rounded-lg text-right hover:bg-green-200 transition-colors" data-question="مين عنده فواتير قيد التسليم بقالها أكتر من 72 ساعة؟">
+                            <i class="fas fa-exclamation-triangle ml-2"></i>فواتير متأخرة أكثر من 72 ساعة
+                        </button>
+                        <button class="ai-question bg-purple-100 text-purple-800 px-3 py-2 rounded-lg text-right hover:bg-purple-200 transition-colors" data-question="مين العميل اللي طلباته كتير الفترة دي؟">
+                            <i class="fas fa-user ml-2"></i>أنشط العملاء
+                        </button>
+                        <button class="ai-question bg-orange-100 text-orange-800 px-3 py-2 rounded-lg text-right hover:bg-orange-200 transition-colors" data-question="كم فاتورة اتسلمت النهارده؟">
+                            <i class="fas fa-check ml-2"></i>فواتير مسلمة اليوم
+                        </button>
+                        <button class="ai-question bg-red-100 text-red-800 px-3 py-2 rounded-lg text-right hover:bg-red-200 transition-colors" data-question="أظهر لي حالة المخزون">
+                            <i class="fas fa-boxes ml-2"></i>حالة المخزون
+                        </button>
+                        <button class="ai-question bg-indigo-100 text-indigo-800 px-3 py-2 rounded-lg text-right hover:bg-indigo-200 transition-colors" data-question="أعطني توصيات لتحسين الأداء">
+                            <i class="fas fa-lightbulb ml-2"></i>توصيات الأداء
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aiResponse" class="bg-blue-50 rounded-lg p-4 hidden">
+                <h4 class="font-semibold text-blue-800 mb-2">الرد من الذكاء الاصطناعي:</h4>
+                <div id="aiResponseContent" class="text-blue-700"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            initializeCharts();
+            setupAIAssistant();
+        });
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('analytics.json');
+                const data = await response.json();
+                
+                // Update statistics
+                document.getElementById('totalInvoices').textContent = data.totalInvoices || 0;
+                document.getElementById('todayDeliveries').textContent = data.ai_insights?.performanceSummary?.todayDeliveries || 0;
+                document.getElementById('pendingDeliveries').textContent = data.ai_insights?.performanceSummary?.pendingDeliveries || 0;
+                document.getElementById('criticalAlerts').textContent = data.ai_insights?.criticalAlerts?.length || 0;
+                
+                // Update AI insights
+                if (data.ai_insights) {
+                    document.getElementById('topDriver').textContent = data.ai_insights.performanceSummary?.topPerformingDriver || '-';
+                    document.getElementById('avgDeliveryTime').textContent = data.ai_insights.performanceSummary?.avgDeliveryTime ? 
+                        Math.round(data.ai_insights.performanceSummary.avgDeliveryTime) + ' دقيقة' : '-';
+                    document.getElementById('mostActiveArea').textContent = data.ai_insights.performanceSummary?.mostActiveArea || '-';
+                    
+                    document.getElementById('systemEfficiency').textContent = data.ai_insights.systemHealth?.systemEfficiency ? 
+                        Math.round(data.ai_insights.systemHealth.systemEfficiency) + '%' : '-';
+                    document.getElementById('availableCapacity').textContent = data.ai_insights.systemHealth?.availableCapacity || 0;
+                    document.getElementById('delayedInvoices').textContent = data.ai_insights.systemHealth?.totalDelayedInvoices || 0;
+                    
+                    document.getElementById('overloadedDrivers').textContent = data.ai_insights.systemHealth?.overloadedDrivers || 0;
+                    document.getElementById('highPriority').textContent = data.ai_insights.systemHealth?.highPriorityPending || 0;
+                    document.getElementById('totalRevenue').textContent = data.ai_insights.performanceSummary?.totalRevenue ? 
+                        'ج.م ' + data.ai_insights.performanceSummary.totalRevenue.toLocaleString() : '-';
+                    
+                    // Load recommendations if available
+                    if (data.ai_insights.recommendations && data.ai_insights.recommendations.length > 0) {
+                        loadRecommendations(data.ai_insights.recommendations);
+                    }
+                }
+                
+                // Load recent invoices
+                loadRecentInvoices(data.invoices || []);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function initializeCharts() {
+            // Status Chart
+            if (document.getElementById('statusChart')) {
+                const statusChart = echarts.init(document.getElementById('statusChart'));
+                const statusOption = {
+                    tooltip: { trigger: 'item' },
+                    series: [{
+                        type: 'pie',
+                        radius: '70%',
+                        data: [
+                            { value: 45, name: 'مسلمة', itemStyle: { color: '#10b981' } },
+                            { value: 30, name: 'قيد التوصيل', itemStyle: { color: '#f59e0b' } },
+                            { value: 5, name: 'مرتجعة', itemStyle: { color: '#ef4444' } }
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }]
+                };
+                statusChart.setOption(statusOption);
+            }
+
+            // Revenue Chart
+            if (document.getElementById('revenueChart')) {
+                const revenueChart = echarts.init(document.getElementById('revenueChart'));
+                const revenueOption = {
+                    tooltip: { trigger: 'axis' },
+                    xAxis: {
+                        type: 'category',
+                        data: ['مسلمة', 'قيد التوصيل', 'مرتجعة']
+                    },
+                    yAxis: { type: 'value' },
+                    series: [{
+                        data: [
+                            { value: 125000, itemStyle: { color: '#10b981' } },
+                            { value: 85000, itemStyle: { color: '#f59e0b' } },
+                            { value: 15000, itemStyle: { color: '#ef4444' } }
+                        ],
+                        type: 'bar',
+                        barWidth: '60%'
+                    }]
+                };
+                revenueChart.setOption(revenueOption);
+            }
+
+            // Delivery Chart
+            if (document.getElementById('deliveryChart')) {
+                const deliveryChart = echarts.init(document.getElementById('deliveryChart'));
+                const deliveryOption = {
+                    tooltip: { trigger: 'axis' },
+                    xAxis: {
+                        type: 'category',
+                        data: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة']
+                    },
+                    yAxis: { type: 'value' },
+                    series: [{
+                        data: [38, 42, 35, 45, 40, 38, 36],
+                        type: 'line',
+                        smooth: true,
+                        itemStyle: { color: '#3b82f6' },
+                        areaStyle: { color: 'rgba(59, 130, 246, 0.1)' }
+                    }]
+                };
+                deliveryChart.setOption(deliveryOption);
+            }
+        }
+
+        function loadRecentInvoices(invoices) {
+            const tableBody = document.getElementById('recentInvoicesTable');
+            if (!tableBody || !invoices.length) return;
+
+            // Show only recent 5 invoices
+            const recentInvoices = invoices.slice(0, 5);
+            
+            tableBody.innerHTML = recentInvoices.map(invoice => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium">${invoice.id}</td>
+                    <td class="px-4 py-3">${invoice.clientName}</td>
+                    <td class="px-4 py-3">ج.م ${invoice.amount.toLocaleString()}</td>
+                    <td class="px-4 py-3">
+                        <span class="status-badge ${invoice.status === 'مسلمة' ? 'status-delivered' : invoice.status === 'قيد التوصيل' ? 'status-pending' : 'status-returned'}">
+                            ${invoice.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="status-badge ${invoice.priority === 'عالية' ? 'priority-high' : invoice.priority === 'متوسطة' ? 'priority-medium' : 'priority-low'}">
+                            ${invoice.priority}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">${invoice.driverCode}</td>
+                    <td class="px-4 py-3">${invoice.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        function loadRecommendations(recommendations) {
+            const section = document.getElementById('recommendationsSection');
+            const list = document.getElementById('recommendationsList');
+            
+            if (!section || !list) return;
+
+            section.style.display = 'block';
+            
+            list.innerHTML = recommendations.map(rec => `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-lightbulb text-yellow-500 text-lg"></i>
+                        </div>
+                        <div class="mr-3 flex-1">
+                            <h4 class="font-semibold text-gray-800">${rec.type}</h4>
+                            <p class="text-gray-600 mt-1">${rec.message}</p>
+                            <div class="flex items-center mt-2">
+                                <span class="text-xs px-2 py-1 rounded-full ${
+                                    rec.priority === 'عالية' ? 'bg-red-100 text-red-800' :
+                                    rec.priority === 'متوسطة' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-green-100 text-green-800'
+                                }">
+                                    أولوية ${rec.priority}
+                                </span>
+                            </div>
+                            ${rec.actions ? `
+                                <div class="mt-2">
+                                    <span class="text-sm text-gray-500">إجراءات مقترحة:</span>
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        ${rec.actions.map(action => `
+                                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${action}</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Setup AI Assistant
+        function setupAIAssistant() {
+            const aiBtn = document.getElementById('aiAssistantBtn');
+            const modal = document.getElementById('aiModal');
+            const closeBtn = document.getElementById('closeAiModal');
+            const questions = document.querySelectorAll('.ai-question');
+
+            aiBtn?.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+
+            closeBtn?.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                document.getElementById('aiResponse').classList.add('hidden');
+            });
+
+            questions.forEach(question => {
+                question.addEventListener('click', async () => {
+                    const questionText = question.dataset.question;
+                    await handleAIQuestion(questionText);
+                });
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    document.getElementById('aiResponse').classList.add('hidden');
+                }
+            });
+        }
+
+        async function handleAIQuestion(question) {
+            const response = document.getElementById('aiResponse');
+            const responseContent = document.getElementById('aiResponseContent');
+            
+            responseContent.innerHTML = '<div class="animate-pulse">جاري التحليل...</div>';
+            response.classList.remove('hidden');
+
+            try {
+                // This will be handled by the main app.js when it's loaded
+                if (window.invoiceSystem) {
+                    await window.invoiceSystem.handleAIChat(question);
+                } else {
+                    // Fallback response for demo
+                    setTimeout(() => {
+                        let answer = '';
+                        switch(question) {
+                            case 'أظهر لي أكثر المندوبين تأخيراً':
+                                answer = 'أكثر المندوبين تأخيراً:<br>• محمود علي: 3 فواتير قيد التوصيل<br>• خالد حسن: 2 فاتورة قيد التوصيل';
+                                break;
+                            case 'مين عنده فواتير قيد التسليم بقالها أكتر من 72 ساعة؟':
+                                answer = 'لا توجد فواتير متأخرة أكثر من 72 ساعة حالياً.';
+                                break;
+                            case 'مين العميل اللي طلباته كتير الفترة دي؟':
+                                answer = 'أنشط العملاء:<br>• أحمد محمد: 5 فواتير<br>• سارة أحمد: 3 فواتير';
+                                break;
+                            case 'كم فاتورة اتسلمت النهارده؟':
+                                answer = 'عدد الفواتير المسلمة اليوم: 12 فاتورة';
+                                break;
+                            default:
+                                answer = 'سأقوم بتحليل طلبك باستخدام DeepSeek...';
+                        }
+                        responseContent.innerHTML = answer;
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Error handling AI question:', error);
+                responseContent.innerHTML = 'حدث خطأ في معالجة السؤال.';
+            }
+        }
+    </script>
+</body>
+</html>

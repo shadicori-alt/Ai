@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الأرشيف - نظام الفواتير الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .floating-ai { position: fixed; bottom: 30px; left: 30px; z-index: 1000; }
+        .ai-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .timeline-item { position: relative; }
+        .timeline-item::before { content: ''; position: absolute; right: 15px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
+        .timeline-item:last-child::before { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">📊 نظام الفواتير الذكي</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-tachometer-alt ml-2"></i>لوحة التحكم
+                    </a>
+                    <a href="invoices.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-file-invoice ml-2"></i>الفواتير
+                    </a>
+                    <a href="drivers.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-truck ml-2"></i>المناديب
+                    </a>
+                    <a href="alerts.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-bell ml-2"></i>التنبيهات
+                    </a>
+                    <a href="new-orders.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-plus-circle ml-2"></i>الطلبات الجديدة
+                    </a>
+                    <a href="inventory.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-boxes ml-2"></i>المخزون
+                    </a>
+                    <a href="archive.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-archive ml-2"></i>الأرشيف
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">الأرشيف</h2>
+                <p class="text-gray-600 mt-2">سجل الفواتير والأنشطة السابقة</p>
+            </div>
+            <div class="flex space-x-3">
+                <button id="exportArchiveBtn" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                    <i class="fas fa-download ml-2"></i>تصدير الأرشيف
+                </button>
+                <button id="generateReportBtn" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                    <i class="fas fa-chart-bar ml-2"></i>تقرير شامل
+                </button>
+            </div>
+        </div>
+
+        <!-- Archive Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-blue-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-file-invoice text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">إجمالي الفواتير المؤرشفة</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalArchivedInvoices">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-green-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">مسلمة نهائياً</p>
+                        <p class="text-2xl font-bold text-gray-900" id="permanentlyDelivered">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-red-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-times-circle text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">ملغاة نهائياً</p>
+                        <p class="text-2xl font-bold text-gray-900" id="permanentlyCancelled">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover border-l-4 border-purple-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-calendar-alt text-2xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <p class="text-sm font-medium text-gray-600">فواتير هذا الشهر</p>
+                        <p class="text-2xl font-bold text-gray-900" id="thisMonthInvoices">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Archive Timeline -->
+        <div class="bg-white rounded-xl p-6 shadow-lg card-hover mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-history text-indigo-600 ml-2"></i>
+                    الخط الزمني للأرشيف
+                </h3>
+                <div class="flex space-x-3">
+                    <select id="timelinePeriod" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="week">هذا الأسبوع</option>
+                        <option value="month">هذا الشهر</option>
+                        <option value="quarter">هذا الربع</option>
+                        <option value="year">هذه السنة</option>
+                    </select>
+                    <button id="refreshTimeline" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="timelineContent" class="space-y-6">
+                <!-- Timeline will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Archived Invoices Table -->
+        <div class="bg-white rounded-xl shadow-lg card-hover mb-8">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-list text-indigo-600 ml-2"></i>
+                        الفواتير المؤرشفة
+                    </h3>
+                    <div class="flex items-center space-x-3">
+                        <div class="flex space-x-2">
+                            <input type="date" id="dateFrom" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <input type="date" id="dateTo" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                        <button id="filterByDate" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                            <i class="fas fa-filter ml-1"></i>تصفية
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الفاتورة</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العميل</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة النهائية</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المندوب</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الإكمال</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">مدة التوصيل</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archivedInvoicesTable" class="bg-white divide-y divide-gray-200">
+                        <!-- Archived invoices will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Monthly Performance Chart -->
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-green-600 ml-2"></i>
+                    الأداء الشهري
+                </h3>
+                <div id="monthlyChart" style="height: 300px;"></div>
+            </div>
+
+            <!-- Driver Performance Summary -->
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-users text-blue-600 ml-2"></i>
+                    أداء المناديب
+                </h3>
+                <div id="driversPerformanceChart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- System Logs -->
+        <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-clipboard-list text-gray-600 ml-2"></i>
+                    سجل النظام
+                </h3>
+                <div class="flex space-x-3">
+                    <select id="logTypeFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <option value="">جميع الأنواع</option>
+                        <option value="invoice">فواتير</option>
+                        <option value="driver">مناديب</option>
+                        <option value="alert">تنبيهات</option>
+                        <option value="system">نظام</option>
+                    </select>
+                    <button id="refreshLogs" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="systemLogs" class="space-y-3 max-h-96 overflow-y-auto">
+                <!-- System logs will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI Assistant -->
+    <div class="floating-ai">
+        <button id="aiAssistantBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 ai-pulse">
+            <i class="fas fa-robot text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Invoice Details Modal -->
+    <div id="invoiceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-file-invoice text-blue-600 ml-2"></i>
+                    تفاصيل الفاتورة المؤرشفة
+                </h3>
+                <button id="closeInvoiceModal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="invoiceModalContent" class="space-y-4">
+                <!-- Invoice details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let archivedInvoices = [];
+        let systemLogs = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadArchiveData();
+            setupEventListeners();
+            setupAIAssistant();
+            initializeCharts();
+        });
+
+        async function loadArchiveData() {
+            try {
+                // Load current invoices as archived data for demo
+                const response = await fetch('invoices.json');
+                const invoices = await response.json();
+                
+                // Simulate archived data by adding completion dates and delivery times
+                archivedInvoices = invoices.map(invoice => ({
+                    ...invoice,
+                    finalStatus: invoice.status === 'مسلمة' ? 'مسلمة نهائياً' : invoice.status === 'مرتجعة' ? 'ملغاة نهائياً' : 'مؤرشفة',
+                    completionDate: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    deliveryDuration: Math.floor(Math.random() * 120) + 30, // 30-150 minutes
+                    archiveDate: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                }));
+
+                updateStatistics();
+                renderArchivedInvoices();
+                renderTimeline();
+                generateSystemLogs();
+                
+            } catch (error) {
+                console.error('Error loading archive data:', error);
+            }
+        }
+
+        function updateStatistics() {
+            const total = archivedInvoices.length;
+            const delivered = archivedInvoices.filter(inv => inv.finalStatus === 'مسلمة نهائياً').length;
+            const cancelled = archivedInvoices.filter(inv => inv.finalStatus === 'ملغاة نهائياً').length;
+            
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const thisMonth = archivedInvoices.filter(inv => {
+                const invoiceDate = new Date(inv.archiveDate);
+                return invoiceDate.getMonth() === currentMonth && invoiceDate.getFullYear() === currentYear;
+            }).length;
+
+            document.getElementById('totalArchivedInvoices').textContent = total;
+            document.getElementById('permanentlyDelivered').textContent = delivered;
+            document.getElementById('permanentlyCancelled').textContent = cancelled;
+            document.getElementById('thisMonthInvoices').textContent = thisMonth;
+        }
+
+        function renderArchivedInvoices() {
+            const tableBody = document.getElementById('archivedInvoicesTable');
+            
+            if (archivedInvoices.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-4"></i>
+                            <p class="text-lg">لا توجد فواتير مؤرشفة</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = archivedInvoices.map(invoice => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${invoice.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.clientName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ج.م ${invoice.amount.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                            invoice.finalStatus === 'مسلمة نهائياً' ? 'bg-green-100 text-green-800' :
+                            invoice.finalStatus === 'ملغاة نهائياً' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">
+                            ${invoice.finalStatus}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.driverCode}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.completionDate}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.deliveryDuration} دقيقة</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="showInvoiceDetails('${invoice.id}')" class="text-blue-600 hover:text-blue-900">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timelineContent');
+            
+            // Group invoices by date
+            const groupedByDate = archivedInvoices.reduce((groups, invoice) => {
+                const date = invoice.archiveDate;
+                if (!groups[date]) {
+                    groups[date] = [];
+                }
+                groups[date].push(invoice);
+                return groups;
+            }, {});
+
+            // Sort dates and create timeline
+            const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
+            
+            container.innerHTML = sortedDates.slice(0, 7).map(date => {
+                const dayInvoices = groupedByDate[date];
+                const delivered = dayInvoices.filter(inv => inv.finalStatus === 'مسلمة نهائياً').length;
+                const cancelled = dayInvoices.filter(inv => inv.finalStatus === 'ملغاة نهائياً').length;
+                
+                return `
+                    <div class="timeline-item flex">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                            ${new Date(date).getDate()}
+                        </div>
+                        <div class="mr-4 flex-1 pb-6">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-lg font-semibold text-gray-900">${new Date(date).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h4>
+                                <span class="text-sm text-gray-500">${dayInvoices.length} فاتورة</span>
+                            </div>
+                            <div class="mt-2 flex space-x-4 text-sm">
+                                <span class="text-green-600">
+                                    <i class="fas fa-check-circle ml-1"></i>${delivered} مسلمة
+                                </span>
+                                <span class="text-red-600">
+                                    <i class="fas fa-times-circle ml-1"></i>${cancelled} ملغاة
+                                </span>
+                                <span class="text-blue-600">
+                                    <i class="fas fa-coins ml-1"></i>ج.م ${dayInvoices.reduce((sum, inv) => sum + inv.amount, 0).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generateSystemLogs() {
+            const logs = [
+                { type: 'system', message: 'تم بدء تشغيل النظام', timestamp: new Date(Date.now() - 86400000).toISOString(), user: 'System' },
+                { type: 'invoice', message: 'تم إنشاء فاتورة جديدة: INV006', timestamp: new Date(Date.now() - 7200000).toISOString(), user: 'Admin' },
+                { type: 'driver', message: 'تم تحديث حالة المندوب DRIVER001 إلى متاح', timestamp: new Date(Date.now() - 3600000).toISOString(), user: 'System' },
+                { type: 'alert', message: 'تم إنشاء تنبيه: ضغط عالي على المندوب DRIVER002', timestamp: new Date(Date.now() - 1800000).toISOString(), user: 'AI System' },
+                { type: 'invoice', message: 'تم تحديث حالة الفاتورة INV002 إلى مسلمة', timestamp: new Date(Date.now() - 900000).toISOString(), user: 'Driver' },
+                { type: 'system', message: 'تم إجراء نسخة احتياطية تلقائية', timestamp: new Date(Date.now() - 600000).toISOString(), user: 'System' },
+                { type: 'driver', message: 'تم إضافة مندوب جديد: DRIVER004', timestamp: new Date(Date.now() - 300000).toISOString(), user: 'Admin' },
+                { type: 'invoice', message: 'تم أرشفة الفاتورة INV001', timestamp: new Date(Date.now() - 60000).toISOString(), user: 'System' }
+            ];
+
+            systemLogs = logs;
+            renderSystemLogs();
+        }
+
+        function renderSystemLogs() {
+            const container = document.getElementById('systemLogs');
+            
+            if (systemLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-clipboard-list text-4xl mb-4"></i>
+                        <p class="text-lg">لا توجد سجلات نظام</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = systemLogs.map(log => `
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${
+                            log.type === 'system' ? 'cog' :
+                            log.type === 'invoice' ? 'file-invoice' :
+                            log.type === 'driver' ? 'truck' :
+                            log.type === 'alert' ? 'bell' : 'info-circle'
+                        } text-${
+                            log.type === 'system' ? 'gray' :
+                            log.type === 'invoice' ? 'blue' :
+                            log.type === 'driver' ? 'green' :
+                            log.type === 'alert' ? 'red' : 'purple'
+                        }-600"></i>
+                    </div>
+                    <div class="mr-4 flex-1">
+                        <p class="text-sm text-gray-900">${log.message}</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            ${new Date(log.timestamp).toLocaleString('ar-EG')} - بواسطة ${log.user}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initializeCharts() {
+            // Monthly Performance Chart
+            const monthlyChart = echarts.init(document.getElementById('monthlyChart'));
+            const monthlyOption = {
+                tooltip: { trigger: 'axis' },
+                xAxis: {
+                    type: 'category',
+                    data: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو']
+                },
+                yAxis: { type: 'value' },
+                series: [
+                    {
+                        name: 'مسلمة',
+                        type: 'bar',
+                        data: [45, 52, 38, 65, 72, 58],
+                        itemStyle: { color: '#10b981' }
+                    },
+                    {
+                        name: 'ملغاة',
+                        type: 'bar',
+                        data: [8, 12, 6, 15, 18, 10],
+                        itemStyle: { color: '#ef4444' }
+                    }
+                ]
+            };
+            monthlyChart.setOption(monthlyOption);
+
+            // Drivers Performance Chart
+            const driversChart = echarts.init(document.getElementById('driversPerformanceChart'));
+            const driversOption = {
+                tooltip: { trigger: 'item' },
+                series: [{
+                    type: 'pie',
+                    radius: '70%',
+                    data: [
+                        { value: 156, name: 'محمد عبد الله', itemStyle: { color: '#3b82f6' } },
+                        { value: 203, name: 'أحمد سعيد', itemStyle: { color: '#10b981' } },
+                        { value: 178, name: 'ياسر خالد', itemStyle: { color: '#f59e0b' } }
+                    ]
+                }]
+            };
+            driversChart.setOption(driversOption);
+
+            // Make charts responsive
+            window.addEventListener('resize', function() {
+                monthlyChart.resize();
+                driversChart.resize();
+            });
+        }
+
+        function setupEventListeners() {
+            // Export archive
+            document.getElementById('exportArchiveBtn').addEventListener('click', exportArchive);
+            
+            // Generate report
+            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+            
+            // Timeline period change
+            document.getElementById('timelinePeriod').addEventListener('change', renderTimeline);
+            
+            // Refresh timeline
+            document.getElementById('refreshTimeline').addEventListener('click', () => {
+                renderTimeline();
+                showNotification('تم تحديث الخط الزمني', 'success');
+            });
+            
+            // Date filter
+            document.getElementById('filterByDate').addEventListener('click', filterByDate);
+            
+            // Refresh logs
+            document.getElementById('refreshLogs').addEventListener('click', () => {
+                generateSystemLogs();
+                showNotification('تم تحديث سجل النظام', 'success');
+            });
+            
+            // Log type filter
+            document.getElementById('logTypeFilter').addEventListener('change', filterSystemLogs);
+            
+            // Invoice modal
+            document.getElementById('closeInvoiceModal').addEventListener('click', () => {
+                document.getElementById('invoiceModal').classList.add('hidden');
+            });
+        }
+
+        function exportArchive() {
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "رقم الفاتورة,العميل,المبلغ,الحالة النهائية,المندوب,تاريخ الإكمال,مدة التوصيل\n" +
+                archivedInvoices.map(inv => 
+                    `${inv.id},${inv.clientName},${inv.amount},${inv.finalStatus},${inv.driverCode},${inv.completionDate},${inv.deliveryDuration}`
+                ).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `archive_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('تم تصدير الأرشيف بنجاح', 'success');
+        }
+
+        function generateReport() {
+            const reportData = {
+                totalInvoices: archivedInvoices.length,
+                totalAmount: archivedInvoices.reduce((sum, inv) => sum + inv.amount, 0),
+                deliveredCount: archivedInvoices.filter(inv => inv.finalStatus === 'مسلمة نهائياً').length,
+                cancelledCount: archivedInvoices.filter(inv => inv.finalStatus === 'ملغاة نهائياً').length,
+                averageDeliveryTime: Math.round(archivedInvoices.reduce((sum, inv) => sum + inv.deliveryDuration, 0) / archivedInvoices.length),
+                reportDate: new Date().toISOString().split('T')[0]
+            };
+
+            alert(`تقرير الأرشيف الشامل:\n\nإجمالي الفواتير: ${reportData.totalInvoices}\nإجمالي المبالغ: ج.م ${reportData.totalAmount.toLocaleString()}\nمسلمة: ${reportData.deliveredCount}\nملغاة: ${reportData.cancelledCount}\nمتوسط وقت التوصيل: ${reportData.averageDeliveryTime} دقيقة`);
+            
+            showNotification('تم إنشاء التقرير بنجاح', 'success');
+        }
+
+        function filterByDate() {
+            const fromDate = document.getElementById('dateFrom').value;
+            const toDate = document.getElementById('dateTo').value;
+            
+            if (!fromDate || !toDate) {
+                showNotification('يرجى تحديد تاريخ البداية والنهاية', 'warning');
+                return;
+            }
+            
+            const filtered = archivedInvoices.filter(inv => {
+                const invoiceDate = new Date(inv.archiveDate);
+                return invoiceDate >= new Date(fromDate) && invoiceDate <= new Date(toDate);
+            });
+            
+            // Re-render table with filtered data
+            const tableBody = document.getElementById('archivedInvoicesTable');
+            tableBody.innerHTML = filtered.map(invoice => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${invoice.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.clientName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ج.م ${invoice.amount.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                            invoice.finalStatus === 'مسلمة نهائياً' ? 'bg-green-100 text-green-800' :
+                            invoice.finalStatus === 'ملغاة نهائياً' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">
+                            ${invoice.finalStatus}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.driverCode}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.completionDate}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice.deliveryDuration} دقيقة</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="showInvoiceDetails('${invoice.id}')" class="text-blue-600 hover:text-blue-900">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            showNotification(`تم عرض ${filtered.length} فاتورة`, 'info');
+        }
+
+        function filterSystemLogs() {
+            const logType = document.getElementById('logTypeFilter').value;
+            
+            if (!logType) {
+                renderSystemLogs();
+                return;
+            }
+            
+            const filtered = systemLogs.filter(log => log.type === logType);
+            
+            const container = document.getElementById('systemLogs');
+            container.innerHTML = filtered.map(log => `
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${
+                            log.type === 'system' ? 'cog' :
+                            log.type === 'invoice' ? 'file-invoice' :
+                            log.type === 'driver' ? 'truck' :
+                            log.type === 'alert' ? 'bell' : 'info-circle'
+                        } text-${
+                            log.type === 'system' ? 'gray' :
+                            log.type === 'invoice' ? 'blue' :
+                            log.type === 'driver' ? 'green' :
+                            log.type === 'alert' ? 'red' : 'purple'
+                        }-600"></i>
+                    </div>
+                    <div class="mr-4 flex-1">
+                        <p class="text-sm text-gray-900">${log.message}</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            ${new Date(log.timestamp).toLocaleString('ar-EG')} - بواسطة ${log.user}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showInvoiceDetails(invoiceId) {
+            const invoice = archivedInvoices.find(inv => inv.id === invoiceId);
+            if (!invoice) return;
+            
+            const modal = document.getElementById('invoiceModal');
+            const content = document.getElementById('invoiceModalContent');
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+                                <i class="fas fa-user text-blue-600 ml-2"></i>
+                                معلومات العميل
+                            </h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">اسم العميل:</span>
+                                    <span class="font-medium">${invoice.clientName}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">رقم الهاتف:</span>
+                                    <span class="font-medium">${invoice.phone}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">العنوان:</span>
+                                    <span class="font-medium">${invoice.address}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                            <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                                <i class="fas fa-coins text-green-600 ml-2"></i>
+                                معلومات الفاتورة
+                            </h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">رقم الفاتورة:</span>
+                                    <span class="font-medium">${invoice.id}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">المبلغ:</span>
+                                    <span class="font-medium">ج.م ${invoice.amount.toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">الحالة النهائية:</span>
+                                    <span class="px-2 py-1 rounded text-xs font-medium ${
+                                        invoice.finalStatus === 'مسلمة نهائياً' ? 'bg-green-100 text-green-800' :
+                                        invoice.finalStatus === 'ملغاة نهائياً' ? 'bg-red-100 text-red-800' :
+                                        'bg-gray-100 text-gray-800'
+                                    }">
+                                        ${invoice.finalStatus}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+                            <h4 class="font-semibold text-purple-800 mb-3 flex items-center">
+                                <i class="fas fa-truck text-purple-600 ml-2"></i>
+                                معلومات التوصيل
+                            </h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">كود المندوب:</span>
+                                    <span class="font-medium">${invoice.driverCode}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">تاريخ الإكمال:</span>
+                                    <span class="font-medium">${invoice.completionDate}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">مدة التوصيل:</span>
+                                    <span class="font-medium">${invoice.deliveryDuration} دقيقة</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">تاريخ الأرشيف:</span>
+                                    <span class="font-medium">${invoice.archiveDate}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
+                            <h4 class="font-semibold text-orange-800 mb-3 flex items-center">
+                                <i class="fas fa-info-circle text-orange-600 ml-2"></i>
+                                ملاحظات
+                            </h4>
+                            <p class="text-sm text-gray-700">${invoice.notes || 'لا توجد ملاحظات'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function setupEventListeners() {
+            // Export archive
+            document.getElementById('exportArchiveBtn').addEventListener('click', exportArchive);
+            
+            // Generate report
+            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+            
+            // Refresh timeline
+            document.getElementById('refreshTimeline').addEventListener('click', () => {
+                renderTimeline();
+                showNotification('تم تحديث الخط الزمني', 'success');
+            });
+            
+            // Filter by date
+            document.getElementById('filterByDate').addEventListener('click', filterByDate);
+            
+            // Refresh logs
+            document.getElementById('refreshLogs').addEventListener('click', () => {
+                generateSystemLogs();
+                showNotification('تم تحديث سجل النظام', 'success');
+            });
+            
+            // Log type filter
+            document.getElementById('logTypeFilter').addEventListener('change', filterSystemLogs);
+            
+            // Invoice modal
+            document.getElementById('closeInvoiceModal').addEventListener('click', () => {
+                document.getElementById('invoiceModal').classList.add('hidden');
+            });
+        }
+
+        function setupAIAssistant() {
+            const aiBtn = document.getElementById('aiAssistantBtn');
+            
+            aiBtn.addEventListener('click', () => {
+                // Redirect to main AI assistant in index.html
+                window.location.href = 'index.html#aiAssistant';
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                type === 'warning' ? 'bg-yellow-600' : 'bg-blue-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${
+                        type === 'success' ? 'check-circle' : 
+                        type === 'error' ? 'exclamation-circle' : 
+                        type === 'warning' ? 'exclamation-triangle' : 'info-circle'
+                    } ml-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

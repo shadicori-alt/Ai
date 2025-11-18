@@ -1,0 +1,112 @@
+{
+  "totalInvoices": 15,
+  "totalAmount": 20500.75,
+  "statusCounts": {
+    "قيد التوصيل": 5,
+    "مسلمة": 8,
+    "مرتجعة": 2
+  },
+  "amountByStatus": {
+    "قيد التوصيل": 6500.50,
+    "مسلمة": 12500.25,
+    "مرتجعة": 1500.00
+  },
+  "driverPerformance": {
+    "DRIVER001": {
+      "name": "محمد عبد الله",
+      "totalInvoices": 6,
+      "totalAmount": 8500.50,
+      "deliveredCount": 4,
+      "pendingCount": 2,
+      "returnedCount": 0,
+      "efficiency": 0.92,
+      "currentLoad": 8,
+      "rating": 4.8,
+      "areas": [
+        "القاهرة",
+        "مدينة نصر",
+        "المعادي"
+      ],
+      "phone": "1098765432",
+      "vehicleNumber": "أ ب ج 1234",
+      "status": "متاح",
+      "successRate": 66.7,
+      "joinDate": "2024-01-15",
+      "avgDeliveryTime": 42.5
+    },
+    "DRIVER002": {
+      "name": "أحمد سعيد",
+      "totalInvoices": 5,
+      "totalAmount": 5200.25,
+      "deliveredCount": 3,
+      "pendingCount": 1,
+      "returnedCount": 1,
+      "efficiency": 0.88,
+      "currentLoad": 12,
+      "rating": 4.6,
+      "areas": [
+        "الجيزة",
+        "الدقي",
+        "الهرم"
+      ],
+      "phone": "1187654321",
+      "vehicleNumber": "د ه و 5678",
+      "status": "متاح",
+      "successRate": 60.0,
+      "joinDate": "2023-08-20",
+      "avgDeliveryTime": 38.0
+    },
+    "DRIVER003": {
+      "name": "ياسر خالد",
+      "totalInvoices": 4,
+      "totalAmount": 3800.00,
+      "deliveredCount": 1,
+      "pendingCount": 2,
+      "returnedCount": 1,
+      "efficiency": 0.85,
+      "currentLoad": 15,
+      "rating": 4.5,
+      "areas": [
+        "القاهرة",
+        "المعادي",
+        "حلوان"
+      ],
+      "phone": "1276543210",
+      "vehicleNumber": "ز ح ط 9012",
+      "status": "مشغول",
+      "successRate": 25.0,
+      "joinDate": "2024-03-10",
+      "avgDeliveryTime": 55.0
+    }
+  },
+  "avgInvoiceValue": 1366.72,
+  "lastUpdate": "2025-11-18 15:30:45",
+  "clientAnalysis": {
+    "أحمد محمد": {
+      "totalInvoices": 3,
+      "totalAmount": 4200.75,
+      "statusCounts": {
+        "قيد التوصيل": 1,
+        "مسلمة": 2,
+        "مرتجعة": 0
+      },
+      "phone": "1234567890",
+      "address": "القاهرة - مدينة نصر - شارع عباس العقاد",
+      "lastOrderDate": "2025-11-17",
+      "preferredDriver": "DRIVER001"
+    },
+    "سارة أحمد": {
+      "totalInvoices": 2,
+      "totalAmount": 2100.50,
+      "statusCounts": {
+        "قيد التوصيل": 0,
+        "مسلمة": 2,
+        "مرتجعة": 0
+      },
+      "phone": "1123456789",
+      "address": "الجيزة - الدقي - شارع التحرير",
+      "lastOrderDate": "2025-11-16",
+      "preferredDriver": "DRIVER002"
+    }
+  }
+}

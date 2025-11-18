@@ -1,0 +1,152 @@
+[
+  {
+    "id": "PROD001",
+    "name": "آيفون 15 برو",
+    "category": "إلكترونيات",
+    "quantity": 25,
+    "minStock": 5,
+    "price": 28999.99,
+    "supplier": "آبل الشرق الأوسط",
+    "lastUpdated": "2025-11-17"
+  },
+  {
+    "id": "PROD002",
+    "name": "سامسونج جالاكسي S24",
+    "category": "إلكترونيات",
+    "quantity": 18,
+    "minStock": 8,
+    "price": 24999.99,
+    "supplier": "سامسونج مصر",
+    "lastUpdated": "2025-11-16"
+  },
+  {
+    "id": "PROD003",
+    "name": "تيشيرت قطن أبيض",
+    "category": "ملابس",
+    "quantity": 150,
+    "minStock": 30,
+    "price": 89.99,
+    "supplier": "الشركة المصرية للملابس",
+    "lastUpdated": "2025-11-15"
+  },
+  {
+    "id": "PROD004",
+    "name": "بنطلون جينز أزرق",
+    "category": "ملابس",
+    "quantity": 75,
+    "minStock": 20,
+    "price": 299.99,
+    "supplier": "الشركة المصرية للملابس",
+    "lastUpdated": "2025-11-14"
+  },
+  {
+    "id": "PROD005",
+    "name": "حذاء رياضي أسود",
+    "category": "ملابس",
+    "quantity": 45,
+    "minStock": 15,
+    "price": 599.99,
+    "supplier": "نايك الشرق الأوسط",
+    "lastUpdated": "2025-11-13"
+  },
+  {
+    "id": "PROD006",
+    "name": "لابتوب ديل XPS 13",
+    "category": "إلكترونيات",
+    "quantity": 12,
+    "minStock": 3,
+    "price": 32999.99,
+    "supplier": "ديل الشرق الأوسط",
+    "lastUpdated": "2025-11-12"
+  },
+  {
+    "id": "PROD007",
+    "name": "شاحن لاسلكي سريع",
+    "category": "إلكترونيات",
+    "quantity": 8,
+    "minStock": 10,
+    "price": 199.99,
+    "supplier": "أنكر مصر",
+    "lastUpdated": "2025-11-11"
+  },
+  {
+    "id": "PROD008",
+    "name": "سماعات بلوتوث",
+    "category": "إلكترونيات",
+    "quantity": 32,
+    "minStock": 12,
+    "price": 449.99,
+    "supplier": "سوني الشرق الأوسط",
+    "lastUpdated": "2025-11-10"
+  },
+  {
+    "id": "PROD009",
+    "name": "قهوة عربية",
+    "category": "أطعمة",
+    "quantity": 200,
+    "minStock": 50,
+    "price": 24.99,
+    "supplier": "مضارب القهوة المصرية",
+    "lastUpdated": "2025-11-09"
+  },
+  {
+    "id": "PROD010",
+    "name": "شاي أخضر",
+    "category": "أطعمة",
+    "quantity": 85,
+    "minStock": 25,
+    "price": 34.99,
+    "supplier": "الشركة المصرية للشاي",
+    "lastUpdated": "2025-11-08"
+  },
+  {
+    "id": "PROD011",
+    "name": "مكواة بخار",
+    "category": "أدوات",
+    "quantity": 6,
+    "minStock": 8,
+    "price": 399.99,
+    "supplier": "فيليبس الشرق الأوسط",
+    "lastUpdated": "2025-11-07"
+  },
+  {
+    "id": "PROD012",
+    "name": "خلاط كهربائي",
+    "category": "أدوات",
+    "quantity": 15,
+    "minStock": 10,
+    "price": 299.99,
+    "supplier": "بلاك آند ديكر",
+    "lastUpdated": "2025-11-06"
+  },
+  {
+    "id": "PROD013",
+    "name": "ماوس لاسلكي",
+    "category": "إلكترونيات",
+    "quantity": 28,
+    "minStock": 15,
+    "price": 149.99,
+    "supplier": "لوجيتك الشرق الأوسط",
+    "lastUpdated": "2025-11-05"
+  },
+  {
+    "id": "PROD014",
+    "name": "كيبورد ميكانيكي",
+    "category": "إلكترونيات",
+    "quantity": 22,
+    "minStock": 8,
+    "price": 599.99,
+    "supplier": "رازر الشرق الأوسط",
+    "lastUpdated": "2025-11-04"
+  },
+  {
+    "id": "PROD015",
+    "name": "فستان سهرة أسود",
+    "category": "ملابس",
+    "quantity": 12,
+    "minStock": 5,
+    "price": 899.99,
+    "supplier": "زارا مصر",
+    "lastUpdated": "2025-11-03"
+  }
+]

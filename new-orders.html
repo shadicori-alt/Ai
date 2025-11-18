@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الطلبات الجديدة - نظام الفواتير الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
+        .ai-pulse { animation: pulse 2s infinite; }
+        .floating-ai { position: fixed; bottom: 30px; left: 30px; z-index: 1000; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .status-badge { @apply px-3 py-1 rounded-full text-xs font-medium; }
+        .status-pending { @apply bg-yellow-100 text-yellow-800; }
+        .status-delivered { @apply bg-green-100 text-green-800; }
+        .status-returned { @apply bg-red-100 text-red-800; }
+        .priority-high { @apply bg-red-500 text-white; }
+        .priority-medium { @apply bg-orange-500 text-white; }
+        .priority-low { @apply bg-blue-500 text-white; }
+        .drop-zone { 
+            border: 2px dashed #cbd5e0; 
+            transition: all 0.3s ease;
+        }
+        .drop-zone.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">📊 نظام الفواتير الذكي</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-tachometer-alt ml-2"></i>لوحة التحكم
+                    </a>
+                    <a href="invoices.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-file-invoice ml-2"></i>الفواتير
+                    </a>
+                    <a href="drivers.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-truck ml-2"></i>المناديب
+                    </a>
+                    <a href="alerts.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-bell ml-2"></i>التنبيهات
+                    </a>
+                    <a href="new-orders.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-plus-circle ml-2"></i>الطلبات الجديدة
+                    </a>
+                    <a href="inventory.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-boxes ml-2"></i>المخزون
+                    </a>
+                    <a href="archive.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-archive ml-2"></i>الأرشيف
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="gradient-bg rounded-2xl p-8 text-white card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-2">الطلبات الجديدة</h2>
+                        <p class="text-blue-100 text-lg">إضافة طلبات جديدة من ملف Excel أو إدخال يدوي</p>
+                    </div>
+                    <div class="text-6xl opacity-80">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Options -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Excel Import -->
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-file-excel text-green-600 ml-2"></i>
+                    استيراد من Excel
+                </h3>
+                
+                <div class="drop-zone rounded-lg p-8 text-center mb-4" id="excelDropZone">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2">اسحب ملف Excel هنا</h4>
+                    <p class="text-gray-500 mb-4">أو انقر لاختيار ملف</p>
+                    <button id="browseExcelBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-folder-open ml-2"></i>اختيار ملف
+                    </button>
+                </div>
+
+                <div class="text-sm text-gray-600">
+                    <h5 class="font-semibold mb-2">تنسيق الملف المطلوب:</h5>
+                    <ul class="list-disc list-inside space-y-1 text-xs">
+                        <li>الملف يجب أن يكون بصيغة .xlsx, .xls, أو .csv</li>
+                        <li>يجب أن يحتوي على الأعمدة: اسم_العميل, الهاتف, العنوان, المبلغ</li>
+                        <li>الصف الأول يجب أن يحتوي على عناوين الأعمدة</li>
+                        <li>يفضل تحميل القالب المرفق</li>
+                    </ul>
+                </div>
+
+                <button id="downloadTemplateBtn" class="mt-4 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                    <i class="fas fa-download ml-2"></i>تحميل قالب Excel
+                </button>
+            </div>
+
+            <!-- Manual Entry -->
+            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-edit text-blue-600 ml-2"></i>
+                    إدخال يدوي
+                </h3>
+
+                <form id="manualOrderForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">اسم العميل</label>
+                            <input type="text" id="clientName" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">رقم الهاتف</label>
+                            <input type="tel" id="phone" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">العنوان الكامل</label>
+                        <textarea id="address" rows="2" required 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">المبلغ (ج.م)</label>
+                            <input type="number" id="amount" step="0.01" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">الأولوية</label>
+                            <select id="priority" required 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">اختر الأولوية</option>
+                                <option value="عالية">عالية</option>
+                                <option value="متوسطة">متوسطة</option>
+                                <option value="منخفضة">منخفضة</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">المندوب</label>
+                            <select id="driverCode" required 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">اختر المندوب</option>
+                                <option value="DRIVER001">محمود علي</option>
+                                <option value="DRIVER002">خالد حسن</option>
+                                <option value="DRIVER003">أحمد حسن</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ملاحظات</label>
+                        <textarea id="notes" rows="2" 
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        <i class="fas fa-plus ml-2"></i>إضافة الطلب
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview Table -->
+        <div class="bg-white rounded-xl p-6 shadow-lg card-hover mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-eye text-indigo-600 ml-2"></i>
+                    معاينة الطلبات المستوردة
+                </h3>
+                <div class="flex gap-2">
+                    <button id="clearPreviewBtn" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-trash ml-2"></i>مسح الكل
+                    </button>
+                    <button id="confirmOrdersBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-check ml-2"></i>تأكيد الطلبات
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">#</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">اسم العميل</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">الهاتف</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">العنوان</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">المبلغ</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">الحالة</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewTableBody">
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                                <i class="fas fa-file-excel text-4xl mb-4"></i>
+                                <p>لم يتم استيراد أي طلبات بعد</p>
+                                <p class="text-sm">قم باستيراد ملف Excel أو إضافة طلبات يدوياً</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 text-sm text-gray-600">
+                <div class="flex justify-between">
+                    <span>عدد الطلبات في المعاينة: <span id="previewCount" class="font-semibold">0</span></span>
+                    <span>إجمالي المبالغ: <span id="previewTotal" class="font-semibold text-green-600">ج.م 0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-history text-indigo-600 ml-2"></i>
+                    أحدث الطلبات المضافة
+                </h3>
+                <a href="invoices.html" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                    عرض الكل <i class="fas fa-arrow-left ml-1"></i>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">رقم الفاتورة</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">اسم العميل</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">المبلغ</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">الحالة</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">الأولوية</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">المندوب</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentOrdersTable">
+                        <!-- Recent orders will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI Assistant -->
+    <div class="floating-ai">
+        <button id="aiAssistantBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 ai-pulse">
+            <i class="fas fa-robot text-2xl"></i>
+        </button>
+        <div id="aiNotificationBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center hidden">0</div>
+    </div>
+
+    <!-- AI Assistant Modal -->
+    <div id="aiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-robot text-purple-600 ml-2"></i>
+                    المساعد الذكي
+                </h3>
+                <button id="closeAiModal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">ما الذي يمكنني مساعدتك به؟</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                        <button class="ai-question bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-right hover:bg-blue-200 transition-colors" data-question="كم عدد الطلبات المعلقة؟">
+                            <i class="fas fa-clock ml-2"></i>الطلبات المعلقة
+                        </button>
+                        <button class="ai-question bg-green-100 text-green-800 px-3 py-2 rounded-lg text-right hover:bg-green-200 transition-colors" data-question="ما أفضل طريقة لتوزيع الطلبات الجديدة؟">
+                            <i class="fas fa-route ml-2"></i>توزيع الطلبات
+                        </button>
+                        <button class="ai-question bg-purple-100 text-purple-800 px-3 py-2 rounded-lg text-right hover:bg-purple-200 transition-colors" data-question="أي المناطق لديها أكبر عدد من الطلبات؟">
+                            <i class="fas fa-map ml-2"></i>المناطق الأكثر طلباً
+                        </button>
+                        <button class="ai-question bg-orange-100 text-orange-800 px-3 py-2 rounded-lg text-right hover:bg-orange-200 transition-colors" data-question="كم من الوقت سيستغرق توصيل الطلبات الجديدة؟">
+                            <i class="fas fa-stopwatch ml-2"></i>وقت التوصيل المتوقع
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aiResponse" class="bg-blue-50 rounded-lg p-4 hidden">
+                <h4 class="font-semibold text-blue-800 mb-2">الرد من الذكاء الاصطناعي:</h4>
+                <div id="aiResponseContent" class="text-blue-700"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for Excel import -->
+    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+
+    <script src="app.js"></script>
+    <script>
+        // Initialize new orders page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNewOrdersPage();
+        });
+
+        let previewOrders = [];
+
+        function initializeNewOrdersPage() {
+            setupExcelImport();
+            setupManualEntry();
+            setupPreviewControls();
+            loadRecentOrders();
+        }
+
+        function setupExcelImport() {
+            const dropZone = document.getElementById('excelDropZone');
+            const browseBtn = document.getElementById('browseExcelBtn');
+            const fileInput = document.getElementById('excelFileInput');
+            const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+
+            // Browse button click
+            browseBtn?.addEventListener('click', () => {
+                fileInput?.click();
+            });
+
+            // File input change
+            fileInput?.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    handleExcelFile(file);
+                }
+            });
+
+            // Drag and drop
+            dropZone?.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone?.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone?.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleExcelFile(files[0]);
+                }
+            });
+
+            // Download template
+            downloadTemplateBtn?.addEventListener('click', downloadExcelTemplate);
+        }
+
+        function handleExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    // For demo purposes, we'll simulate Excel parsing
+                    // In a real implementation, you would use a library like SheetJS
+                    const data = simulateExcelParsing(file.name);
+                    previewOrders = [...previewOrders, ...data];
+                    updatePreviewTable();
+                    showNotification(`تم استيراد ${data.length} طلب بنجاح`, 'success');
+                } catch (error) {
+                    console.error('Error parsing Excel file:', error);
+                    showNotification('خطأ في قراءة ملف Excel', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function simulateExcelParsing(filename) {
+            // Simulate Excel data parsing
+            const sampleData = [
+                {
+                    clientName: 'أحمد محمد',
+                    phone: '0123456789',
+                    address: 'القاهرة - مدينة نصر',
+                    amount: 1250.50,
+                    priority: 'متوسطة',
+                    driverCode: 'DRIVER001'
+                },
+                {
+                    clientName: 'سارة أحمد',
+                    phone: '0112345678',
+                    address: 'الجيزة - الدقي',
+                    amount: 875.25,
+                    priority: 'عالية',
+                    driverCode: 'DRIVER002'
+                },
+                {
+                    clientName: 'محمد علي',
+                    phone: '0109876543',
+                    address: 'الإسكندرية - سيدي جابر',
+                    amount: 2100.75,
+                    priority: 'منخفضة',
+                    driverCode: 'DRIVER001'
+                }
+            ];
+            return sampleData;
+        }
+
+        function downloadExcelTemplate() {
+            // Create template data
+            const templateData = [
+                ['اسم_العميل', 'الهاتف', 'العنوان', 'المبلغ', 'الأولوية', 'كود_المندوب'],
+                ['أحمد محمد', '0123456789', 'القاهرة - مدينة نصر', '1250.50', 'متوسطة', 'DRIVER001'],
+                ['سارة أحمد', '0112345678', 'الجيزة - الدقي', '875.25', 'عالية', 'DRIVER002']
+            ];
+
+            // Convert to CSV for download
+            const csvContent = templateData.map(row => row.join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'قالب_الطلبات.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function setupManualEntry() {
+            const form = document.getElementById('manualOrderForm');
+            
+            form?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const order = {
+                    clientName: formData.get('clientName') || document.getElementById('clientName').value,
+                    phone: formData.get('phone') || document.getElementById('phone').value,
+                    address: formData.get('address') || document.getElementById('address').value,
+                    amount: parseFloat(document.getElementById('amount').value),
+                    priority: document.getElementById('priority').value,
+                    driverCode: document.getElementById('driverCode').value,
+                    notes: document.getElementById('notes').value
+                };
+
+                previewOrders.push(order);
+                updatePreviewTable();
+                form.reset();
+                showNotification('تم إضافة الطلب إلى المعاينة', 'success');
+            });
+        }
+
+        function setupPreviewControls() {
+            const clearBtn = document.getElementById('clearPreviewBtn');
+            const confirmBtn = document.getElementById('confirmOrdersBtn');
+
+            clearBtn?.addEventListener('click', () => {
+                if (confirm('هل أنت متأكد من مسح جميع الطلبات في المعاينة؟')) {
+                    previewOrders = [];
+                    updatePreviewTable();
+                    showNotification('تم مسح جميع الطلبات', 'info');
+                }
+            });
+
+            confirmBtn?.addEventListener('click', async () => {
+                if (previewOrders.length === 0) {
+                    showNotification('لا توجد طلبات للتأكيد', 'warning');
+                    return;
+                }
+
+                try {
+                    // Convert preview orders to invoices
+                    const newInvoices = previewOrders.map((order, index) => ({
+                        id: `INV${String(Date.now() + index).slice(-3)}`,
+                        clientName: order.clientName,
+                        phone: order.phone,
+                        address: order.address,
+                        amount: order.amount,
+                        driverCode: order.driverCode,
+                        status: 'قيد التوصيل',
+                        priority: order.priority,
+                        date: new Date().toISOString().split('T')[0],
+                        deliveryTime: 0,
+                        notes: order.notes || '',
+                        area: extractArea(order.address),
+                        delayedHours: 0,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    }));
+
+                    // Add to system (in real implementation, this would be an API call)
+                    if (window.invoiceSystem) {
+                        newInvoices.forEach(invoice => {
+                            window.invoiceSystem.addInvoice(invoice);
+                        });
+                    }
+
+                    showNotification(`تم إضافة ${newInvoices.length} فاتورة بنجاح`, 'success');
+                    previewOrders = [];
+                    updatePreviewTable();
+                    loadRecentOrders();
+                } catch (error) {
+                    console.error('Error confirming orders:', error);
+                    showNotification('حدث خطأ في تأكيد الطلبات', 'error');
+                }
+            });
+        }
+
+        function updatePreviewTable() {
+            const tableBody = document.getElementById('previewTableBody');
+            const previewCount = document.getElementById('previewCount');
+            const previewTotal = document.getElementById('previewTotal');
+
+            if (!tableBody) return;
+
+            if (previewOrders.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                            <i class="fas fa-file-excel text-4xl mb-4"></i>
+                            <p>لم يتم استيراد أي طلبات بعد</p>
+                            <p class="text-sm">قم باستيراد ملف Excel أو إضافة طلبات يدوياً</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tableBody.innerHTML = previewOrders.map((order, index) => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-3">${index + 1}</td>
+                        <td class="px-4 py-3">${order.clientName}</td>
+                        <td class="px-4 py-3">${order.phone}</td>
+                        <td class="px-4 py-3">${order.address}</td>
+                        <td class="px-4 py-3 font-semibold">ج.م ${order.amount.toLocaleString()}</td>
+                        <td class="px-4 py-3">
+                            <span class="status-badge status-pending">قيد التوصيل</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <button onclick="removePreviewOrder(${index})" 
+                                    class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update counters
+            if (previewCount) previewCount.textContent = previewOrders.length;
+            if (previewTotal) {
+                const total = previewOrders.reduce((sum, order) => sum + order.amount, 0);
+                previewTotal.textContent = `ج.م ${total.toLocaleString()}`;
+            }
+        }
+
+        function removePreviewOrder(index) {
+            previewOrders.splice(index, 1);
+            updatePreviewTable();
+            showNotification('تم حذف الطلب من المعاينة', 'info');
+        }
+
+        function extractArea(address) {
+            // Simple area extraction from address
+            const areas = ['القاهرة', 'الجيزة', 'الإسكندرية', 'الدقي', 'مدينة نصر', 'سيدي جابر'];
+            for (const area of areas) {
+                if (address.includes(area)) {
+                    return area;
+                }
+            }
+            return 'غير محدد';
+        }
+
+        function loadRecentOrders() {
+            const tableBody = document.getElementById('recentOrdersTable');
+            if (!tableBody) return;
+
+            // Sample recent orders
+            const recentOrders = [
+                {
+                    id: 'INV001',
+                    clientName: 'أحمد محمد',
+                    amount: 1250.50,
+                    status: 'قيد التوصيل',
+                    priority: 'متوسطة',
+                    driverCode: 'DRIVER001',
+                    date: new Date().toISOString().split('T')[0]
+                },
+                {
+                    id: 'INV002',
+                    clientName: 'سارة أحمد',
+                    amount: 875.25,
+                    status: 'قيد التوصيل',
+                    priority: 'عالية',
+                    driverCode: 'DRIVER002',
+                    date: new Date().toISOString().split('T')[0]
+                }
+            ];
+
+            tableBody.innerHTML = recentOrders.map(order => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium">${order.id}</td>
+                    <td class="px-4 py-3">${order.clientName}</td>
+                    <td class="px-4 py-3">ج.م ${order.amount.toLocaleString()}</td>
+                    <td class="px-4 py-3">
+                        <span class="status-badge status-pending">${order.status}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="status-badge ${order.priority === 'عالية' ? 'priority-high' : order.priority === 'متوسطة' ? 'priority-medium' : 'priority-low'}">${order.priority}</span>
+                    </td>
+                    <td class="px-4 py-3">${order.driverCode}</td>
+                    <td class="px-4 py-3">${order.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                type === 'warning' ? 'bg-yellow-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        // Setup AI Assistant
+        function setupAIAssistant() {
+            const aiBtn = document.getElementById('aiAssistantBtn');
+            const modal = document.getElementById('aiModal');
+            const closeBtn = document.getElementById('closeAiModal');
+            const questions = document.querySelectorAll('.ai-question');
+
+            aiBtn?.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+
+            closeBtn?.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                document.getElementById('aiResponse').classList.add('hidden');
+            });
+
+            questions.forEach(question => {
+                question.addEventListener('click', async () => {
+                    const questionText = question.dataset.question;
+                    await handleAIQuestion(questionText);
+                });
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    document.getElementById('aiResponse').classList.add('hidden');
+                }
+            });
+        }
+
+        async function handleAIQuestion(question) {
+            const response = document.getElementById('aiResponse');
+            const responseContent = document.getElementById('aiResponseContent');
+            
+            responseContent.innerHTML = '<div class="animate-pulse">جاري التحليل...</div>';
+            response.classList.remove('hidden');
+
+            try {
+                // This will be handled by the main app.js when it's loaded
+                if (window.invoiceSystem) {
+                    await window.invoiceSystem.handleAIChat(question);
+                } else {
+                    // Fallback response for demo
+                    setTimeout(() => {
+                        let answer = '';
+                        switch(question) {
+                            case 'كم عدد الطلبات المعلقة؟':
+                                answer = `عدد الطلبات المعلقة: ${previewOrders.length} طلب`;
+                                break;
+                            case 'ما أفضل طريقة لتوزيع الطلبات الجديدة؟':
+                                answer = 'أفضل طريقة لتوزيع الطلبات:<br>• توزيع حسب المناطق الجغرافية<br>• مراعاة حمل العمل للمناديب<br>• الأولوية للطلبات المستعجلة';
+                                break;
+                            case 'أي المناطق لديها أكبر عدد من الطلبات؟':
+                                answer = 'المناطق الأكثر طلباً:<br>• القاهرة: 45% من الطلبات<br>• الجيزة: 30% من الطلبات<br>• الإسكندرية: 25% من الطلبات';
+                                break;
+                            case 'كم من الوقت سيستغرق توصيل الطلبات الجديدة؟':
+                                answer = 'وقت التوصيل المتوقع:<br>• الطلبات العالية الأولوية: 2-4 ساعات<br>• الطلبات المتوسطة: 4-8 ساعات<br>• الطلبات المنخفضة: 8-24 ساعة';
+                                break;
+                            default:
+                                answer = 'سأقوم بتحليل طلبك باستخدام DeepSeek...';
+                        }
+                        responseContent.innerHTML = answer;
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Error handling AI question:', error);
+                responseContent.innerHTML = 'حدث خطأ في معالجة السؤال.';
+            }
+        }
+
+        // Initialize AI Assistant when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupAIAssistant();
+        });
+    </script>
+</body>
+</html>

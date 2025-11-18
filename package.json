@@ -1,0 +1,29 @@
+{
+  "name": "smart-invoice-system",
+  "version": "1.0.0",
+  "description": "نظام إدارة الفواتير الذكي مدعوم بالذكاء الاصطناعي",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "build": "echo 'Build completed for static site'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "invoice",
+    "management",
+    "ai",
+    "arabic",
+    "dashboard",
+    "analytics"
+  ],
+  "author": "Smart Invoice System",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "dependencies": {
+    "echarts": "^5.4.3",
+    "tailwindcss": "^3.3.0",
+    "font-awesome": "^6.4.0"
+  }
+}
