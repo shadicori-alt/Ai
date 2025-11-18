@@ -3,421 +3,582 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الفواتير - نظام الفواتير الذكي</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
-        .ai-pulse { animation: pulse 2s infinite; }
-        .floating-ai { position: fixed; bottom: 30px; left: 30px; z-index: 1000; }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .status-badge { @apply px-3 py-1 rounded-full text-xs font-medium; }
-        .status-pending { @apply bg-yellow-100 text-yellow-800; }
-        .status-delivered { @apply bg-green-100 text-green-800; }
-        .status-returned { @apply bg-red-100 text-red-800; }
-        .priority-high { @apply bg-red-500 text-white; }
-        .priority-medium { @apply bg-orange-500 text-white; }
-        .priority-low { @apply bg-blue-500 text-white; }
-        .excel-cell { @apply border border-gray-300 rounded px-2 py-1 text-sm; }
-        .excel-cell:focus { @apply ring-2 ring-blue-500 border-blue-500; }
-    </style>
+    <title>إدارة الفواتير - نظام إدارة الفواتير والتوصيل</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50">
+<body>
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-2xl font-bold text-gray-900">📊 نظام الفواتير الذكي</h1>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="index.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-tachometer-alt ml-2"></i>لوحة التحكم
-                    </a>
-                    <a href="invoices.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-file-invoice ml-2"></i>الفواتير
-                    </a>
-                    <a href="drivers.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-truck ml-2"></i>المناديب
-                    </a>
-                    <a href="alerts.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-bell ml-2"></i>التنبيهات
-                    </a>
-                    <a href="new-orders.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-plus-circle ml-2"></i>الطلبات الجديدة
-                    </a>
-                    <a href="inventory.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-boxes ml-2"></i>المخزون
-                    </a>
-                    <a href="archive.html" class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-archive ml-2"></i>الأرشيف
-                    </a>
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-truck"></i>
+                شركة التوصيل
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-house-door"></i> لوحة التحكم
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="invoices.html">
+                            <i class="bi bi-receipt"></i> الفواتير
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="drivers.html">
+                            <i class="bi bi-person-fill-gear"></i> المناديب
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="alerts.html">
+                            <i class="bi bi-exclamation-triangle"></i> التنبيهات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="stock.html">
+                            <i class="bi bi-box-seam"></i> المخزون
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="archive.html">
+                            <i class="bi bi-archive"></i> الأرشيف
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">
+                            <i class="bi bi-gear"></i> الإعدادات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light btn-sm mt-1" id="themeToggle" onclick="toggleTheme()">
+                            <i class="bi bi-moon-fill"></i>
+                        </button>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header Section -->
-        <div class="mb-8">
-            <div class="gradient-bg rounded-2xl p-8 text-white card-hover">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-3xl font-bold mb-2">إدارة الفواتير</h2>
-                        <p class="text-blue-100 text-lg">Excel-like تحرير فواتيرك بطريقة سهلة ومبتكرة</p>
-                    </div>
-                    <div class="text-6xl opacity-80">
-                        <i class="fas fa-table"></i>
-                    </div>
-                </div>
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="mb-3">
+                    <i class="bi bi-receipt text-primary"></i>
+                    إدارة الفواتير
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">الرئيسية</a></li>
+                        <li class="breadcrumb-item active">الفواتير</li>
+                    </ol>
+                </nav>
             </div>
         </div>
 
-        <!-- Invoice Controls -->
-        <div class="bg-white rounded-xl p-6 shadow-lg card-hover mb-8">
-            <div class="flex flex-wrap gap-4 items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-cogs text-indigo-600 ml-2"></i>
-                    أدوات التحكم
-                </h3>
-                <div class="flex gap-2">
-                    <button id="addRowBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-plus ml-2"></i>إضافة صف
-                    </button>
-                    <button id="saveBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-save ml-2"></i>حفظ التغييرات
-                    </button>
-                    <button id="exportBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                        <i class="fas fa-download ml-2"></i>تصدير Excel
-                    </button>
-                    <button id="importBtn" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
-                        <i class="fas fa-upload ml-2"></i>استيراد Excel
-                    </button>
+        <!-- Search and Filter -->
+        <div class="search-container">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="search-box">
+                        <input type="text" class="form-control" id="searchInput" placeholder="بحث عن فاتورة...">
+                        <i class="bi bi-search"></i>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Search and Filter -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">البحث</label>
-                    <input type="text" id="invoiceSearch" placeholder="ابحث عن فاتورة..." 
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">الحالة</label>
-                    <select id="statusFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <div class="col-md-2">
+                    <select class="form-select" id="statusFilter">
                         <option value="">جميع الحالات</option>
                         <option value="قيد التوصيل">قيد التوصيل</option>
                         <option value="مسلمة">مسلمة</option>
                         <option value="مرتجعة">مرتجعة</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">الأولوية</label>
-                    <select id="priorityFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">جميع الأولويات</option>
-                        <option value="عالية">عالية</option>
-                        <option value="متوسطة">متوسطة</option>
-                        <option value="منخفضة">منخفضة</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">المندوب</label>
-                    <select id="driverFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <div class="col-md-2">
+                    <select class="form-select" id="driverFilter">
                         <option value="">جميع المناديب</option>
-                        <option value="DRIVER001">محمود علي</option>
-                        <option value="DRIVER002">خالد حسن</option>
+                        <!-- Drivers will be loaded here -->
                     </select>
                 </div>
-            </div>
-        </div>
-
-        <!-- Excel-like Invoice Table -->
-        <div class="bg-white rounded-xl p-6 shadow-lg card-hover mb-8">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-table text-indigo-600 ml-2"></i>
-                    جدول الفواتير - Excel Style
-                </h3>
-                <div class="text-sm text-gray-500">
-                    عدد السجلات: <span id="invoiceCount">0</span> | 
-                    إجمالي المبالغ: <span id="totalAmount" class="font-semibold text-green-600">ج.م 0</span>
+                <div class="col-md-2">
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="clearFilters()">
+                        <i class="bi bi-x-circle"></i>
+                        مسح
+                    </button>
                 </div>
             </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">رقم الفاتورة</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">اسم العميل</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">الهاتف</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">العنوان</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">المبلغ</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">الحالة</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">الأولوية</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">المندوب</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">التاريخ</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">وقت التوصيل</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">المنطقة</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">تأخير (ساعات)</th>
-                            <th class="px-3 py-3 text-right font-semibold text-gray-700 border border-gray-300">إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoiceTableBody">
-                        <!-- Table rows will be populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
         </div>
 
-        <!-- Invoice Analytics -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Status Distribution -->
-            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
-                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                    <i class="fas fa-chart-pie text-indigo-600 ml-2"></i>
-                    توزيع حالات الفواتير
-                </h3>
-                <div id="invoiceStatusChart" style="height: 300px;"></div>
-            </div>
-
-            <!-- Revenue by Priority -->
-            <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
-                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                    <i class="fas fa-chart-bar text-indigo-600 ml-2"></i>
-                    الإيرادات حسب الأولوية
-                </h3>
-                <div id="priorityChart" style="height: 300px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Floating AI Assistant -->
-    <div class="floating-ai">
-        <button id="aiAssistantBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 ai-pulse">
-            <i class="fas fa-robot text-2xl"></i>
-        </button>
-        <div id="aiNotificationBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center hidden">0</div>
-    </div>
-
-    <!-- AI Assistant Modal -->
-    <div id="aiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-robot text-purple-600 ml-2"></i>
-                    المساعد الذكي
-                </h3>
-                <button id="closeAiModal" class="text-gray-400 hover:text-gray-600 text-2xl">
-                    <i class="fas fa-times"></i>
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addInvoiceModal">
+                    <i class="bi bi-plus-circle"></i>
+                    إضافة فاتورة جديدة
                 </button>
+                <button class="btn btn-info" onclick="exportInvoices()">
+                    <i class="bi bi-download"></i>
+                    تصدير الفواتير (CSV)
+                </button>
+                <!-- تم إزالة زر Excel المسبب للمشكلة -->
             </div>
-            
-            <div class="mb-6">
-                <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                    <h4 class="font-semibold text-gray-800 mb-2">ما الذي يمكنني مساعدتك به؟</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <button class="ai-question bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-right hover:bg-blue-200 transition-colors" data-question="أظهر لي أكثر المندوبين تأخيراً">
-                            <i class="fas fa-clock ml-2"></i>أكثر المندوبين تأخيراً
-                        </button>
-                        <button class="ai-question bg-green-100 text-green-800 px-3 py-2 rounded-lg text-right hover:bg-green-200 transition-colors" data-question="مين عنده فواتير قيد التسليم بقالها أكتر من 72 ساعة؟">
-                            <i class="fas fa-exclamation-triangle ml-2"></i>فواتير متأخرة أكثر من 72 ساعة
-                        </button>
-                        <button class="ai-question bg-purple-100 text-purple-800 px-3 py-2 rounded-lg text-right hover:bg-purple-200 transition-colors" data-question="مين العميل اللي طلباته كتير الفترة دي؟">
-                            <i class="fas fa-user ml-2"></i>أنشط العملاء
-                        </button>
-                        <button class="ai-question bg-orange-100 text-orange-800 px-3 py-2 rounded-lg text-right hover:bg-orange-200 transition-colors" data-question="كم فاتورة اتسلمت النهارده؟">
-                            <i class="fas fa-check ml-2"></i>فواتير مسلمة اليوم
-                        </button>
-                        <button class="ai-question bg-red-100 text-red-800 px-3 py-2 rounded-lg text-right hover:bg-red-200 transition-colors" data-question="أعطني إحصائيات عن الفواتير">
-                            <i class="fas fa-chart-bar ml-2"></i>إحصائيات الفواتير
-                        </button>
-                        <button class="ai-question bg-indigo-100 text-indigo-800 px-3 py-2 rounded-lg text-right hover:bg-indigo-200 transition-colors" data-question="أظهر لي الفواتير الأعلى قيمة">
-                            <i class="fas fa-dollar-sign ml-2"></i>الفواتير الأعلى قيمة
-                        </button>
-                    </div>
-                </div>
-            </div>
+        </div>
 
-            <div id="aiResponse" class="bg-blue-50 rounded-lg p-4 hidden">
-                <h4 class="font-semibold text-blue-800 mb-2">الرد من الذكاء الاصطناعي:</h4>
-                <div id="aiResponseContent" class="text-blue-700"></div>
+        <!-- Invoices Table -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-table"></i>
+                قائمة الفواتير
+                <span class="badge bg-secondary ms-2" id="invoiceCount">0</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="invoicesTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable('id')">
+                                    رقم الفاتورة
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th onclick="sortTable('customerName')">
+                                    اسم العميل
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th onclick="sortTable('phoneNumber')">
+                                    رقم الهاتف
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th onclick="sortTable('address')">
+                                    العنوان
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th onclick="sortTable('amount')">
+                                    المبلغ
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th onclick="sortTable('driverId')">
+                                    المندوب
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th onclick="sortTable('status')">
+                                    الحالة
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th onclick="sortTable('date')">
+                                    التاريخ
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTableBody">
+                            <!-- Invoices will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Hidden file input for Excel import -->
-    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+    <!-- Add Invoice Modal -->
+    <div class="modal fade" id="addInvoiceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle"></i>
+                        إضافة فاتورة جديدة
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addInvoiceForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">اسم العميل</label>
+                                <input type="text" class="form-control" name="customerName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" name="phoneNumber" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">العنوان</label>
+                                <textarea class="form-control" name="address" rows="2" required></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">قيمة الفاتورة</label>
+                                <input type="number" class="form-control" name="amount" step="0.01" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">المندوب</label>
+                                <select class="form-select" name="driverId" required>
+                                    <option value="">اختر مندوب</option>
+                                    <!-- Drivers will be loaded here -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" name="status" required>
+                                    <option value="قيد التوصيل">قيد التوصيل</option>
+                                    <option value="مسلمة">مسلمة</option>
+                                    <option value="مرتجعة">مرتجعة</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewInvoice()">
+                        <i class="bi bi-save"></i>
+                        حفظ الفاتورة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Edit Status Modal -->
+    <div class="modal fade" id="editStatusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square"></i>
+                        تعديل حالة الفاتورة
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editStatusForm">
+                        <input type="hidden" name="invoiceId">
+                        <div class="mb-3">
+                            <label class="form-label">رقم الفاتورة</label>
+                            <input type="text" class="form-control" name="invoiceIdDisplay" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">اسم العميل</label>
+                            <input type="text" class="form-control" name="customerNameDisplay" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحالة الجديدة</label>
+                            <select class="form-select" name="newStatus" required>
+                                <option value="قيد التوصيل">قيد التوصيل</option>
+                                <option value="مسلمة">مسلمة</option>
+                                <option value="مرتجعة">مرتجعة</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="updateInvoiceStatus()">
+                        <i class="bi bi-check-circle"></i>
+                        تحديث الحالة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 شركة التوصيل. جميع الحقوق محفوظة.</p>
+            <p class="small text-muted">نظام إدارة الفواتير والتوصيل - تصميم وتطوير</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
     <script src="app.js"></script>
+
     <script>
-        // Initialize invoices page
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeInvoiceCharts();
-            setupInvoiceFilters();
+        let currentInvoices = [];
+        let sortColumn = '';
+        let sortDirection = 'asc';
+
+        // Page-specific initialization
+        document.addEventListener('appReady', function() {
+            loadInvoicesPage();
         });
 
-        function initializeInvoiceCharts() {
-            // Status Distribution Chart
-            if (document.getElementById('invoiceStatusChart')) {
-                const statusChart = echarts.init(document.getElementById('invoiceStatusChart'));
-                const statusOption = {
-                    tooltip: { trigger: 'item' },
-                    series: [{
-                        type: 'pie',
-                        radius: '70%',
-                        data: [
-                            { value: 45, name: 'مسلمة', itemStyle: { color: '#10b981' } },
-                            { value: 30, name: 'قيد التوصيل', itemStyle: { color: '#f59e0b' } },
-                            { value: 5, name: 'مرتجعة', itemStyle: { color: '#ef4444' } }
-                        ],
-                        emphasis: {
-                            itemStyle: {
-                                shadowBlur: 10,
-                                shadowOffsetX: 0,
-                                shadowColor: 'rgba(0, 0, 0, 0.5)'
-                            }
-                        }
-                    }]
-                };
-                statusChart.setOption(statusOption);
-            }
-
-            // Priority Chart
-            if (document.getElementById('priorityChart')) {
-                const priorityChart = echarts.init(document.getElementById('priorityChart'));
-                const priorityOption = {
-                    tooltip: { trigger: 'axis' },
-                    xAxis: {
-                        type: 'category',
-                        data: ['عالية', 'متوسطة', 'منخفضة']
-                    },
-                    yAxis: { type: 'value' },
-                    series: [{
-                        data: [
-                            { value: 45000, itemStyle: { color: '#ef4444' } },
-                            { value: 85000, itemStyle: { color: '#f59e0b' } },
-                            { value: 25000, itemStyle: { color: '#3b82f6' } }
-                        ],
-                        type: 'bar',
-                        barWidth: '60%'
-                    }]
-                };
-                priorityChart.setOption(priorityOption);
-            }
+        function loadInvoicesPage() {
+            loadDriversSelect();
+            loadInvoicesTable();
+            setupEventListeners();
         }
 
-        function setupInvoiceFilters() {
-            const searchInput = document.getElementById('invoiceSearch');
-            const statusFilter = document.getElementById('statusFilter');
-            const priorityFilter = document.getElementById('priorityFilter');
+        function loadDriversSelect() {
+            const driverSelect = document.querySelector('[name="driverId"]');
             const driverFilter = document.getElementById('driverFilter');
-
-            if (searchInput) {
-                searchInput.addEventListener('input', filterInvoices);
-            }
-            if (statusFilter) {
-                statusFilter.addEventListener('change', filterInvoices);
-            }
-            if (priorityFilter) {
-                priorityFilter.addEventListener('change', filterInvoices);
-            }
-            if (driverFilter) {
-                driverFilter.addEventListener('change', filterInvoices);
-            }
-        }
-
-        function filterInvoices() {
-            // This function will be implemented by the main app.js
-            console.log('Filtering invoices...');
-        }
-
-        // Setup AI Assistant
-        function setupAIAssistant() {
-            const aiBtn = document.getElementById('aiAssistantBtn');
-            const modal = document.getElementById('aiModal');
-            const closeBtn = document.getElementById('closeAiModal');
-            const questions = document.querySelectorAll('.ai-question');
-
-            aiBtn?.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-            });
-
-            closeBtn?.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                document.getElementById('aiResponse').classList.add('hidden');
-            });
-
-            questions.forEach(question => {
-                question.addEventListener('click', async () => {
-                    const questionText = question.dataset.question;
-                    await handleAIQuestion(questionText);
-                });
-            });
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                    document.getElementById('aiResponse').classList.add('hidden');
-                }
-            });
-        }
-
-        async function handleAIQuestion(question) {
-            const response = document.getElementById('aiResponse');
-            const responseContent = document.getElementById('aiResponseContent');
             
-            responseContent.innerHTML = '<div class="animate-pulse">جاري التحليل...</div>';
-            response.classList.remove('hidden');
+            const options = drivers.map(driver => 
+                `<option value="${driver.id}">${driver.name}</option>`
+            ).join('');
+            
+            driverSelect.innerHTML = '<option value="">اختر مندوب</option>' + options;
+            driverFilter.innerHTML = '<option value="">جميع المناديب</option>' + options;
+        }
 
-            try {
-                // This will be handled by the main app.js when it's loaded
-                if (window.invoiceSystem) {
-                    await window.invoiceSystem.handleAIChat(question);
-                } else {
-                    // Fallback response for demo
-                    setTimeout(() => {
-                        let answer = '';
-                        switch(question) {
-                            case 'أظهر لي أكثر المندوبين تأخيراً':
-                                answer = 'أكثر المندوبين تأخيراً:<br>• محمود علي: 3 فواتير قيد التوصيل<br>• خالد حسن: 2 فاتورة قيد التوصيل';
-                                break;
-                            case 'مين عنده فواتير قيد التسليم بقالها أكتر من 72 ساعة؟':
-                                answer = 'لا توجد فواتير متأخرة أكثر من 72 ساعة حالياً.';
-                                break;
-                            case 'مين العميل اللي طلباته كتير الفترة دي؟':
-                                answer = 'أنشط العملاء:<br>• أحمد محمد: 5 فواتير<br>• سارة أحمد: 3 فواتير';
-                                break;
-                            case 'كم فاتورة اتسلمت النهارده؟':
-                                answer = 'عدد الفواتير المسلمة اليوم: 12 فاتورة';
-                                break;
-                            case 'أعطني إحصائيات عن الفواتير':
-                                answer = 'إحصائيات الفواتير:<br>• إجمالي الفواتير: 80 فاتورة<br>• إجمالي الإيرادات: ج.م 225,000<br>• متوسط قيمة الفاتورة: ج.م 2,812';
-                                break;
-                            case 'أظهر لي الفواتير الأعلى قيمة':
-                                answer = 'أعلى الفواتير قيمة:<br>• INV001: ج.م 5,250<br>• INV015: ج.م 4,800<br>• INV023: ج.م 4,500';
-                                break;
-                            default:
-                                answer = 'سأقوم بتحليل طلبك باستخدام DeepSeek...';
-                        }
-                        responseContent.innerHTML = answer;
-                    }, 1500);
-                }
-            } catch (error) {
-                console.error('Error handling AI question:', error);
-                responseContent.innerHTML = 'حدث خطأ في معالجة السؤال.';
+        function loadInvoicesTable() {
+            currentInvoices = [...invoices];
+            renderInvoicesTable(currentInvoices);
+            updateInvoiceCount();
+        }
+
+        function renderInvoicesTable(invoicesToRender) {
+            const tbody = document.getElementById('invoicesTableBody');
+            
+            if (invoicesToRender.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">لا توجد فواتير</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = invoicesToRender.map(invoice => {
+                const driver = drivers.find(d => d.id === invoice.driverId);
+                return `
+                    <tr>
+                        <td><strong>${invoice.id}</strong></td>
+                        <td>${invoice.customerName}</td>
+                        <td>${invoice.phoneNumber}</td>
+                        <td>${invoice.address}</td>
+                        <td>${formatCurrency(invoice.amount)}</td>
+                        <td>${driver ? driver.name : 'غير محدد'}</td>
+                        <td>${getStatusBadge(invoice.status)}</td>
+                        <td>${formatDate(invoice.date)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editInvoiceStatus('${invoice.id}')">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewInvoiceDetails('${invoice.id}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="archiveInvoiceConfirm('${invoice.id}')">
+                                <i class="bi bi-archive"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'قيد التوصيل':
+                    return '<span class="badge badge-pending">قيد التوصيل</span>';
+                case 'مسلمة':
+                    return '<span class="badge badge-delivered">مسلمة</span>';
+                case 'مرتجعة':
+                    return '<span class="badge badge-returned">مرتجعة</span>';
+                default:
+                    return `<span class="badge bg-secondary">${status}</span>`;
             }
         }
+
+        function updateInvoiceCount() {
+            document.getElementById('invoiceCount').textContent = currentInvoices.length;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            document.getElementById('statusFilter').addEventListener('change', handleFilter);
+            document.getElementById('driverFilter').addEventListener('change', handleFilter);
+            document.getElementById('dateFilter').addEventListener('change', handleFilter);
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value;
+            const filtered = query ? searchInvoices(query) : [...invoices];
+            applyFilters(filtered);
+        }
+
+        function handleFilter() {
+            const status = document.getElementById('statusFilter').value;
+            const driverId = document.getElementById('driverFilter').value;
+            const date = document.getElementById('dateFilter').value;
+            
+            let filtered = [...invoices];
+            
+            if (status) {
+                filtered = filtered.filter(inv => inv.status === status);
+            }
+            
+            if (driverId) {
+                filtered = filtered.filter(inv => inv.driverId === driverId);
+            }
+            
+            if (date) {
+                filtered = filtered.filter(inv => inv.date === date);
+            }
+            
+            const searchQuery = document.getElementById('searchInput').value;
+            if (searchQuery) {
+                filtered = filtered.filter(inv => 
+                    inv.customerName.includes(searchQuery) ||
+                    inv.id.includes(searchQuery) ||
+                    inv.phoneNumber.includes(searchQuery) ||
+                    inv.address.includes(searchQuery)
+                );
+            }
+            
+            currentInvoices = filtered;
+            renderInvoicesTable(currentInvoices);
+            updateInvoiceCount();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('driverFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            
+            currentInvoices = [...invoices];
+            renderInvoicesTable(currentInvoices);
+            updateInvoiceCount();
+        }
+
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            const sorted = sortTable(currentInvoices, column, sortDirection);
+            renderInvoicesTable(sorted);
+        }
+
+        function addNewInvoice() {
+            const form = document.getElementById('addInvoiceForm');
+            const formData = new FormData(form);
+            
+            const invoiceData = {
+                customerName: formData.get('customerName'),
+                phoneNumber: formData.get('phoneNumber'),
+                address: formData.get('address'),
+                amount: parseFloat(formData.get('amount')),
+                driverId: formData.get('driverId'),
+                status: formData.get('status')
+            };
+            
+            const newInvoice = addInvoice(invoiceData);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addInvoiceModal'));
+            modal.hide();
+            
+            // Reset form
+            form.reset();
+            
+            // Reload table
+            loadInvoicesTable();
+            
+            // Show success message
+            showNotification('تم إضافة الفاتورة بنجاح', 'success');
+        }
+
+        function editInvoiceStatus(invoiceId) {
+            const invoice = invoices.find(inv => inv.id === invoiceId);
+            if (!invoice) return;
+            
+            const form = document.getElementById('editStatusForm');
+            form.querySelector('[name="invoiceId"]').value = invoiceId;
+            form.querySelector('[name="invoiceIdDisplay"]').value = invoiceId;
+            form.querySelector('[name="customerNameDisplay"]').value = invoice.customerName;
+            form.querySelector('[name="newStatus"]').value = invoice.status;
+            
+            const modal = new bootstrap.Modal(document.getElementById('editStatusModal'));
+            modal.show();
+        }
+
+        function updateInvoiceStatus() {
+            const form = document.getElementById('editStatusForm');
+            const formData = new FormData(form);
+            
+            const invoiceId = formData.get('invoiceId');
+            const newStatus = formData.get('newStatus');
+            
+            if (updateInvoiceStatus(invoiceId, newStatus)) {
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editStatusModal'));
+                modal.hide();
+                
+                // Reload table
+                loadInvoicesTable();
+                
+                // Show success message
+                showNotification('تم تحديث حالة الفاتورة بنجاح', 'success');
+            }
+        }
+
+        function viewInvoiceDetails(invoiceId) {
+            const invoice = invoices.find(inv => inv.id === invoiceId);
+            if (!invoice) return;
+            
+            const driver = drivers.find(d => d.id === invoice.driverId);
+            
+            alert(`تفاصيل الفاتورة:
+                \nرقم الفاتورة: ${invoice.id}
+                \nاسم العميل: ${invoice.customerName}
+                \nرقم الهاتف: ${invoice.phoneNumber}
+                \nالعنوان: ${invoice.address}
+                \nالمبلغ: ${formatCurrency(invoice.amount)}
+                \nالمندوب: ${driver ? driver.name : 'غير محدد'}
+                \nالحالة: ${invoice.status}
+                \nالتاريخ: ${formatDate(invoice.date)}
+                \nآخر تحديث: ${formatDateTime(invoice.lastStatusUpdate)}
+            `);
+        }
+
+        function archiveInvoiceConfirm(invoiceId) {
+            if (confirm('هل أنت متأكد من نقل هذه الفاتورة إلى الأرشيف؟')) {
+                if (archiveInvoice(invoiceId)) {
+                    loadInvoicesTable();
+                    showNotification('تم نقل الفاتورة إلى الأرشيف', 'info');
+                }
+            }
+        }
+
+        function exportInvoices() {
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + 
+                "رقم الفاتورة,اسم العميل,رقم الهاتف,العنوان,المبلغ,المندوب,الحالة,التاريخ\n" +
+                currentInvoices.map(inv => {
+                    const driver = drivers.find(d => d.id === inv.driverId);
+                    return `${inv.id},${inv.customerName},${inv.phoneNumber},${inv.address},${inv.amount},${driver ? driver.name : ''},${inv.status},${inv.date}`;
+                }).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "فواتير.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('تم تصدير الفواتير بنجاح', 'success');
+        }
+
+        // تم إزالة دالة downloadExcelTemplate المسببة للمشكلة
     </script>
 </body>
 </html>
