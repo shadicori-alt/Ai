@@ -18,6 +18,17 @@ const initialData = {
             "status": "قيد التوصيل",
             "date": "2025-11-17",
             "lastStatusUpdate": "2025-11-17T10:30:00"
+        },
+        {
+            "id": "INV002",
+            "customerName": "سارة أحمد",
+            "phoneNumber": "01123456789",
+            "address": "الجيزة - الدقي",
+            "amount": 875.25,
+            "driverId": "DRIVER002",
+            "status": "مسلمة",
+            "date": "2025-11-16",
+            "lastStatusUpdate": "2025-11-16T15:45:00"
         }
     ],
     drivers: [
@@ -29,6 +40,15 @@ const initialData = {
             "status": "متاح",
             "totalDeliveries": 45,
             "totalReturns": 3
+        },
+        {
+            "id": "DRIVER002",
+            "name": "أحمد سعيد",
+            "phoneNumber": "01187654321",
+            "vehicleNumber": "د ه و 5678",
+            "status": "متاح",
+            "totalDeliveries": 62,
+            "totalReturns": 1
         }
     ],
     stock: [
@@ -40,6 +60,15 @@ const initialData = {
             "minQuantity": 5,
             "price": 8500.00,
             "supplier": "تكنولوجيا المستقبل"
+        },
+        {
+            "id": "STK002",
+            "name": "طابعة Canon",
+            "category": "إلكترونيات",
+            "quantity": 8,
+            "minQuantity": 3,
+            "price": 2200.00,
+            "supplier": "العربية للتجارة"
         }
     ]
 };
@@ -53,15 +82,21 @@ document.addEventListener('DOMContentLoaded', function() {
 function loadInitialData() {
     try {
         // تحميل البيانات من localStorage أو استخدام البيانات الأولية
-        const savedInvoices = localStorage.getItem('invoices');
-        const savedDrivers = localStorage.getItem('drivers');
-        const savedStock = localStorage.getItem('stock');
+        const savedInvoices = localStorage.getItem('smart_invoice_invoices');
+        const savedDrivers = localStorage.getItem('smart_invoice_drivers');
+        const savedStock = localStorage.getItem('smart_invoice_stock');
+        const savedArchive = localStorage.getItem('smart_invoice_archive');
         
         invoices = savedInvoices ? JSON.parse(savedInvoices) : initialData.invoices;
         drivers = savedDrivers ? JSON.parse(savedDrivers) : initialData.drivers;
         stock = savedStock ? JSON.parse(savedStock) : initialData.stock;
+        archivedInvoices = savedArchive ? JSON.parse(savedArchive) : [];
         
         console.log('✅ تم تحميل البيانات بنجاح');
+        console.log(`- الفواتير: ${invoices.length}`);
+        console.log(`- المناديب: ${drivers.length}`);
+        console.log(`- المخزون: ${stock.length}`);
+        console.log(`- الأرشيف: ${archivedInvoices.length}`);
         
         // إشعار أن التطبيق جاهز
         setTimeout(() => {
@@ -74,20 +109,24 @@ function loadInitialData() {
         invoices = initialData.invoices;
         drivers = initialData.drivers;
         stock = initialData.stock;
+        archivedInvoices = [];
         
         document.dispatchEvent(new Event('appReady'));
     }
 }
 
-// وظائف أساسية
-function saveData() {
+// نظام التخزين المحسن
+function saveAllData() {
     try {
-        localStorage.setItem('invoices', JSON.stringify(invoices));
-        localStorage.setItem('drivers', JSON.stringify(drivers));
-        localStorage.setItem('stock', JSON.stringify(stock));
-        console.log('💾 تم حفظ البيانات');
+        localStorage.setItem('smart_invoice_invoices', JSON.stringify(invoices));
+        localStorage.setItem('smart_invoice_drivers', JSON.stringify(drivers));
+        localStorage.setItem('smart_invoice_stock', JSON.stringify(stock));
+        localStorage.setItem('smart_invoice_archive', JSON.stringify(archivedInvoices));
+        console.log('💾 تم حفظ جميع البيانات');
+        return true;
     } catch (error) {
         console.error('❌ خطأ في حفظ البيانات:', error);
+        return false;
     }
 }
 
@@ -101,7 +140,7 @@ function addInvoice(invoiceData) {
     };
     
     invoices.push(newInvoice);
-    saveData();
+    saveAllData();
     return newInvoice;
 }
 
@@ -110,7 +149,18 @@ function updateInvoiceStatus(invoiceId, newStatus) {
     if (invoice) {
         invoice.status = newStatus;
         invoice.lastStatusUpdate = new Date().toISOString();
-        saveData();
+        saveAllData();
+        return true;
+    }
+    return false;
+}
+
+function archiveInvoice(invoiceId) {
+    const invoiceIndex = invoices.findIndex(inv => inv.id === invoiceId);
+    if (invoiceIndex !== -1) {
+        const invoice = invoices.splice(invoiceIndex, 1)[0];
+        archivedInvoices.push(invoice);
+        saveAllData();
         return true;
     }
     return false;
@@ -126,11 +176,33 @@ function addDriver(driverData) {
     };
     
     drivers.push(newDriver);
-    saveData();
+    saveAllData();
     return newDriver;
 }
 
-// وظائف البحث
+// وظائف إدارة المخزون
+function addStockItem(stockData) {
+    const newItem = {
+        id: 'STK' + String(stock.length + 1).padStart(3, '0'),
+        ...stockData
+    };
+    
+    stock.push(newItem);
+    saveAllData();
+    return newItem;
+}
+
+function updateStockQuantity(itemId, newQuantity) {
+    const item = stock.find(s => s.id === itemId);
+    if (item) {
+        item.quantity = newQuantity;
+        saveAllData();
+        return true;
+    }
+    return false;
+}
+
+// وظائف البحث والتصفية
 function searchInvoices(query) {
     return invoices.filter(invoice => 
         invoice.customerName.toLowerCase().includes(query.toLowerCase()) ||
@@ -138,6 +210,22 @@ function searchInvoices(query) {
         invoice.phoneNumber.includes(query) ||
         invoice.address.toLowerCase().includes(query.toLowerCase())
     );
+}
+
+function getDelayedInvoices() {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    return invoices.filter(invoice => 
+        invoice.status === 'قيد التوصيل' && 
+        new Date(invoice.lastStatusUpdate) < twentyFourHoursAgo
+    );
+}
+
+function getLowStockItems() {
+    return stock.filter(item => item.quantity < item.minQuantity);
+}
+
+function getDriverInvoices(driverId) {
+    return invoices.filter(invoice => invoice.driverId === driverId);
 }
 
 // وظائف المساعدة
@@ -150,6 +238,10 @@ function formatCurrency(amount) {
 
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('ar-EG');
+}
+
+function formatDateTime(dateTimeString) {
+    return new Date(dateTimeString).toLocaleString('ar-EG');
 }
 
 function showNotification(message, type = 'info') {
@@ -184,16 +276,6 @@ window.invoiceSystem = {
             };
             
             const response = responses[question] || 'سأقوم بتحليل طلبك وتقديم التوصيات المناسبة...';
-            
-            // عرض الرد في واجهة المستخدم
-            const responseElement = document.getElementById('aiResponseContent');
-            const responseContainer = document.getElementById('aiResponse');
-            
-            if (responseElement && responseContainer) {
-                responseElement.innerHTML = response.replace(/\n/g, '<br>');
-                responseContainer.classList.remove('hidden');
-            }
-            
             return response;
             
         } catch (error) {
@@ -208,7 +290,7 @@ function initializeApp() {
     console.log('🚀 التطبيق جاهز للاستخدام');
     
     // حفظ تلقائي كل دقيقة
-    setInterval(saveData, 60000);
+    setInterval(saveAllData, 60000);
     
     // إعدادات إضافية
     setupTheme();
@@ -226,14 +308,42 @@ function toggleTheme() {
     currentTheme = currentTheme === 'light' ? 'dark' : 'light';
     document.documentElement.classList.toggle('dark');
     localStorage.setItem('theme', currentTheme);
+    showNotification(`تم التبديل إلى الوضع ${currentTheme === 'dark' ? 'الداكن' : 'الفاتح'}`);
+}
+
+// وظائف الفرز
+function sortTable(data, column, direction) {
+    return [...data].sort((a, b) => {
+        let aValue = a[column];
+        let bValue = b[column];
+        
+        if (typeof aValue === 'string') {
+            aValue = aValue.toLowerCase();
+            bValue = bValue.toLowerCase();
+        }
+        
+        if (direction === 'asc') {
+            return aValue > bValue ? 1 : -1;
+        } else {
+            return aValue < bValue ? 1 : -1;
+        }
+    });
 }
 
 // جعل الدوال متاحة globally للاستخدام في HTML
 window.addInvoice = addInvoice;
 window.updateInvoiceStatus = updateInvoiceStatus;
 window.addDriver = addDriver;
+window.addStockItem = addStockItem;
+window.updateStockQuantity = updateStockQuantity;
 window.searchInvoices = searchInvoices;
 window.formatCurrency = formatCurrency;
 window.formatDate = formatDate;
+window.formatDateTime = formatDateTime;
 window.showNotification = showNotification;
 window.toggleTheme = toggleTheme;
+window.getDelayedInvoices = getDelayedInvoices;
+window.getLowStockItems = getLowStockItems;
+window.getDriverInvoices = getDriverInvoices;
+window.sortTable = sortTable;
+window.saveAllData = saveAllData;
